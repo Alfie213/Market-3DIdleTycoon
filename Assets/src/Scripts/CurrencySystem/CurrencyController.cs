@@ -9,6 +9,16 @@ public class CurrencyController : MonoBehaviour
     
     private int _currencyCount;
 
+    private void Awake()
+    {
+        _currencyCount = 100;
+    }
+
+    private void Start()
+    {
+        OnCurrencyCountChange?.Invoke(_currencyCount);
+    }
+
     public bool TryDecreaseCurrency(int amount)
     {
         if (amount < 0)
