@@ -3,9 +3,10 @@ using UnityEngine;
 public class BuildingData : ScriptableObject
 {
     public int cost;
-    public GameObject prefab;
-    public BuildingData upgradeTo;
+    
+    public int maxWorkersCount;
+    public int costPerWorker;
 
-    // public int baseIncome;
-    // public float incomeInterval;
+    public float baseProcessingTime;
+    public int costPerSpeedUpgrade;
 }
