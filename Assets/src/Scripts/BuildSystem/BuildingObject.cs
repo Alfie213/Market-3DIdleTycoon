@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class BuildObject : MonoBehaviour
+public class BuildingObject : MonoBehaviour
 {
     [SerializeField] private BuildingData currentBuildingData;
     
