@@ -1,25 +1,22 @@
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
 public class CurrencyObserver : MonoBehaviour
 {
-    [SerializeField] private CurrencyController currencyController;
-    [SerializeField] private TextMeshProUGUI currencyCountTMP;
+    [SerializeField] private TextMeshProUGUI currencyCurrentAmountTMP;
 
     private void OnEnable()
     {
-        currencyController.OnCurrencyCountChange += EditCurrencyCount;
+        GameEvents.OnCurrencyChanged += EditCurrencyCount;
     }
 
     private void OnDisable()
     {
-        currencyController.OnCurrencyCountChange -= EditCurrencyCount;
+        GameEvents.OnCurrencyChanged -= EditCurrencyCount;
     }
 
-    private void EditCurrencyCount(int currencyCount)
+    private void EditCurrencyCount(int currentAmount)
     {
-        currencyCountTMP.text = currencyCount.ToString();
+        currencyCurrentAmountTMP.text = currentAmount.ToString();
     }
 }

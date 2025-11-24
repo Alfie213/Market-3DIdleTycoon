@@ -1,36 +1,40 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class CurrencyController : MonoBehaviour
 {
-    public event Action<int> OnCurrencyCountChange;
+    public static CurrencyController Instance { get; private set; }
+    
+    [SerializeField] private int startCurrency = 150;
     
     private int _currencyCount;
 
     private void Awake()
     {
-        _currencyCount = 100;
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+
+        _currencyCount = startCurrency;
     }
 
     private void Start()
     {
-        OnCurrencyCountChange?.Invoke(_currencyCount);
+        GameEvents.InvokeCurrencyChanged(_currencyCount);
     }
 
-    public bool TryDecreaseCurrency(int amount)
+    public bool TrySpendCurrency(int amount)
     {
-        if (amount < 0)
-        {
-            Debug.LogWarning("Amount < 0");
-            return false;
-        }
-
-        if (_currencyCount - amount < 0) return false;
+        if (amount < 0 || _currencyCount < amount) return false;
         
         _currencyCount -= amount;
-        OnCurrencyCountChange?.Invoke(_currencyCount);
+        GameEvents.InvokeCurrencyChanged(_currencyCount);
         return true;
+    }
+
+    public void AddCurrency(int amount)
+    {
+        if (amount <= 0) return;
+        
+        _currencyCount += amount;
+        GameEvents.InvokeCurrencyChanged(_currencyCount);
     }
 }
