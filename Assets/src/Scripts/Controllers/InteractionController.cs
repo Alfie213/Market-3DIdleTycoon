@@ -14,6 +14,13 @@ public class InteractionController : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
+            // Блокировка нажатия, если курсор над UI (чтобы не кликать сквозь окно улучшений)
+            if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+            {
+                Debug.Log("Out");
+                return;
+            }
+
             HandleInput();
         }
     }
@@ -21,27 +28,17 @@ public class InteractionController : MonoBehaviour
     private void HandleInput()
     {
         Ray ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit hit, 100f, buildingLayer))
+        if (Physics.Raycast(ray, out RaycastHit hit, 1000f, buildingLayer))
         {
-            if (hit.collider.TryGetComponent(out BuildingObjectBase building))
+            Debug.Log(hit.collider.gameObject.name);
+            if (hit.collider.TryGetComponent(out BuildingController building))
             {
-                TryBuild(building);
+                building.Interact();
             }
-        }
-    }
-
-    private void TryBuild(BuildingObjectBase building)
-    {
-        if (building.IsBuilt) return;
-
-        int cost = building.Data.Cost;
-        if (CurrencyController.Instance.TrySpendCurrency(cost))
-        {
-            building.Construct();
         }
         else
         {
-            Debug.Log("Not enough money!");
+            Debug.Log("No");
         }
     }
 }

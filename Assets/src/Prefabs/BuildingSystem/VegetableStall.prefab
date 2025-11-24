@@ -72,8 +72,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7840828701763313812}
-  - component: {fileID: 1001172669126458458}
-  m_Layer: 0
+  - component: {fileID: 6147643143378742379}
+  - component: {fileID: 6355296384853821710}
+  m_Layer: 6
   m_Name: VegetableStall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -97,7 +98,7 @@ Transform:
   - {fileID: 8416690450738588458}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1001172669126458458
+--- !u!114 &6147643143378742379
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -106,14 +107,35 @@ MonoBehaviour:
   m_GameObject: {fileID: 1530729672906602373}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 94191614a3bf6f94eb36449cf4548bbf, type: 3}
+  m_Script: {fileID: 11500000, guid: 93810391b2c908646b39c07666894552, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   buildingData: {fileID: 11400000, guid: 10ccca4d01b23f948bda837d3da5fec3, type: 2}
-  queueStartPoint: {fileID: 5839276916263792478}
-  interactionPoint: {fileID: 5530976829674845142}
   visualModel: {fileID: 531226498530535074}
   constructionSiteVisuals: {fileID: 4716561120190185182}
+  interactionPoint: {fileID: 5530976829674845142}
+  queueStartPoint: {fileID: 5839276916263792478}
+--- !u!65 &6355296384853821710
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1530729672906602373}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.95, y: 1.39, z: 2.33}
+  m_Center: {x: 0, y: 0.64, z: 0}
 --- !u!1 &2008820663805415080
 GameObject:
   m_ObjectHideFlags: 0
@@ -341,6 +363,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: stall_table_001
       objectReference: {fileID: 0}
+    - target: {fileID: 4668159864789244182, guid: 07743e45b78754c40811c663de41b6ff,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -439,6 +466,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: stall_table_001
+      objectReference: {fileID: 0}
+    - target: {fileID: 4668159864789244182, guid: 07743e45b78754c40811c663de41b6ff,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

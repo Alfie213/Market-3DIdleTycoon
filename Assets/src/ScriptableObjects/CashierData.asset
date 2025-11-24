@@ -13,8 +13,10 @@ MonoBehaviour:
   m_Name: CashierData
   m_EditorClassIdentifier: 
   buildingName: Cashier
-  type: 1
-  cost: 100
-  processingTime: 1
+  buildCost: 0
+  profitPerCustomer: 150
+  baseProcessingTime: 2
+  baseMaxWorkers: 1
   maxQueueCapacity: 1
-  profitPerCustomer: 15
+  speedUpgradeCost: 100
+  workerUpgradeCost: 250

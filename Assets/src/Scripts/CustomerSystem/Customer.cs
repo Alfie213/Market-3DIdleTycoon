@@ -2,18 +2,23 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
+[RequireComponent(typeof(NavMeshAgent))]
 public class Customer : MonoBehaviour
 {
-    [SerializeField] private NavMeshAgent agent;
-    
-    private Queue<BuildingObjectBase> _shoppingList;
-    private BuildingObjectBase _currentTarget;
+    private NavMeshAgent _agent;
+    private Queue<BuildingController> _shoppingList;
+    private BuildingController _currentTarget;
     private Vector3 _exitPosition;
     private bool _isWaitingInQueue;
 
-    public void Initialize(List<BuildingObjectBase> route, Vector3 exitPos)
+    private void Awake()
     {
-        _shoppingList = new Queue<BuildingObjectBase>(route);
+        _agent = GetComponent<NavMeshAgent>();
+    }
+
+    public void Initialize(BuildingController[] route, Vector3 exitPos)
+    {
+        _shoppingList = new Queue<BuildingController>(route);
         _exitPosition = exitPos;
         GoToNextTarget();
     }
@@ -27,14 +32,14 @@ public class Customer : MonoBehaviour
             _currentTarget = _shoppingList.Dequeue();
             if (_currentTarget != null)
             {
-                agent.SetDestination(_currentTarget.InteractionPoint.position);
+                _agent.SetDestination(_currentTarget.InteractionPoint.position);
             }
         }
         else
         {
             _currentTarget = null;
-            agent.SetDestination(_exitPosition);
-            Destroy(gameObject, 5f); // Safety cleanup
+            _agent.SetDestination(_exitPosition);
+            Destroy(gameObject, 5f); 
         }
     }
 
@@ -42,7 +47,8 @@ public class Customer : MonoBehaviour
     {
         if (_currentTarget == null || _isWaitingInQueue) return;
 
-        if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
+        // Проверка: дошли ли до точки взаимодействия
+        if (!_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance)
         {
             TryJoinQueue();
         }
@@ -57,13 +63,15 @@ public class Customer : MonoBehaviour
         }
         else
         {
-            // If queue full, wait or leave. For prototype, we just wait near interaction point.
+            // Простая логика: если очередь полна, ждем на месте (idle)
+            // В будущем здесь можно сделать логику ухода или ожидания в стороне
         }
     }
 
     public void MoveToPosition(Vector3 position)
     {
-        agent.SetDestination(position);
+        // Используется, когда NPC уже в очереди, чтобы двигаться за людьми
+        _agent.SetDestination(position);
     }
 
     public void CompleteCurrentTask()

@@ -3,9 +3,9 @@ using UnityEngine;
 
 public class ShopController : MonoBehaviour
 {
-    [SerializeField] private List<BuildingObjectBase> requiredBuildings;
+    [SerializeField] private List<BuildingController> requiredBuildings;
     
-    private HashSet<BuildingObjectBase> _builtBuildings = new HashSet<BuildingObjectBase>();
+    private HashSet<BuildingController> _builtBuildings = new HashSet<BuildingController>();
     private bool _isOpen = false;
 
     private void OnEnable()
@@ -18,7 +18,7 @@ public class ShopController : MonoBehaviour
         GameEvents.OnBuildingConstructed -= HandleBuildingConstructed;
     }
 
-    private void HandleBuildingConstructed(BuildingObjectBase building)
+    private void HandleBuildingConstructed(BuildingController building)
     {
         if (_isOpen) return;
         if (!requiredBuildings.Contains(building)) return;

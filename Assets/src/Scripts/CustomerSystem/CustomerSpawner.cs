@@ -4,14 +4,14 @@ using UnityEngine;
 
 public class CustomerSpawner : MonoBehaviour
 {
-    [SerializeField] private Customer customerPrefab;
+    [Header("Configuration")]
+    [SerializeField] private Customer[] customerPrefabs; // Массив разных скинов NPC
+    [SerializeField] private BuildingController[] storeRoute; // Маршрут: Лавка -> Касса
+    
+    [Header("Spawn Settings")]
     [SerializeField] private Transform spawnPoint;
     [SerializeField] private Transform exitPoint;
     [SerializeField] private float spawnInterval = 3f;
-    
-    [Header("Route Configuration")]
-    [SerializeField] private VegetableStall vegetableStall;
-    [SerializeField] private CashierBuilding cashierBuilding;
 
     private bool _spawningActive = false;
 
@@ -42,14 +42,13 @@ public class CustomerSpawner : MonoBehaviour
 
     private void SpawnCustomer()
     {
-        Customer newCustomer = Instantiate(customerPrefab, spawnPoint.position, Quaternion.identity);
-        
-        List<BuildingObjectBase> route = new List<BuildingObjectBase>
-        {
-            vegetableStall,
-            cashierBuilding
-        };
+        if (customerPrefabs.Length == 0) return;
 
-        newCustomer.Initialize(route, exitPoint.position);
+        // 1. Случайный префаб
+        Customer randomPrefab = customerPrefabs[Random.Range(0, customerPrefabs.Length)];
+        Customer newCustomer = Instantiate(randomPrefab, spawnPoint.position, Quaternion.identity);
+        
+        // 2. Инициализация маршрутом (массивом)
+        newCustomer.Initialize(storeRoute, exitPoint.position);
     }
 }
