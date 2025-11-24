@@ -10,9 +10,11 @@ public class CameraController : MonoBehaviour
     [Header("Zoom Settings")]
     [SerializeField] private float minZoom = 5f;
     [SerializeField] private float maxZoom = 20f;
-    [SerializeField] private float zoomSensitivity = 2f; // Чувствительность колесика
-    [SerializeField] private float touchZoomSensitivity = 0.05f; // Чувствительность щипка
-    [SerializeField] private float zoomLerpSpeed = 10f; // Скорость сглаживания зума
+    [SerializeField] private float zoomSensitivity = 2f; 
+    [SerializeField] private float touchZoomSensitivity = 0.05f; 
+    [SerializeField] private float zoomLerpSpeed = 10f;
+    [Tooltip("Насколько изменится зум при одном нажатии на UI кнопку")]
+    [SerializeField] private float buttonZoomStep = 2f; 
 
     [Header("Movement Settings")]
     [SerializeField] private float groundHeight = 0f;
@@ -24,7 +26,6 @@ public class CameraController : MonoBehaviour
     private Vector3 _velocity;
     private bool _isDragging;
     
-    // Целевое значение зума для плавности
     private float _targetZoom; 
 
     private void Awake()
@@ -32,7 +33,6 @@ public class CameraController : MonoBehaviour
         _camera = GetComponent<Camera>();
         _groundPlane = new Plane(Vector3.up, new Vector3(0, groundHeight, 0));
         
-        // Инициализируем текущим зумом
         if (_camera.orthographic)
             _targetZoom = _camera.orthographicSize;
         else
@@ -41,9 +41,10 @@ public class CameraController : MonoBehaviour
 
     private void LateUpdate()
     {
-        HandleZoom();
+        HandleZoomInput();
+        ApplyZoom();
         
-        // Если мы зумим пальцами, перемещение отключаем, чтобы не сбивать камеру
+        // Если зумим пальцами, отключаем перемещение
         if (Input.touchCount >= 2)
         {
             _isDragging = false; 
@@ -53,17 +54,17 @@ public class CameraController : MonoBehaviour
         HandleMovement();
     }
 
-    private void HandleZoom()
+    private void HandleZoomInput()
     {
         float scrollDelta = 0f;
 
-        // 1. Логика для мыши
+        // Мышь
         if (Input.mouseScrollDelta.y != 0)
         {
             scrollDelta = -Input.mouseScrollDelta.y * zoomSensitivity;
         }
 
-        // 2. Логика для тача (Pinch to Zoom)
+        // Тач (Pinch)
         if (Input.touchCount == 2)
         {
             Touch touchZero = Input.GetTouch(0);
@@ -80,14 +81,14 @@ public class CameraController : MonoBehaviour
             scrollDelta = deltaMagnitudeDiff * touchZoomSensitivity;
         }
 
-        // Применяем изменение к таргету
         if (Mathf.Abs(scrollDelta) > 0.01f)
         {
-            _targetZoom += scrollDelta;
-            _targetZoom = Mathf.Clamp(_targetZoom, minZoom, maxZoom);
+            ModifyTargetZoom(scrollDelta);
         }
+    }
 
-        // Плавное применение зума
+    private void ApplyZoom()
+    {
         if (_camera.orthographic)
         {
             _camera.orthographicSize = Mathf.Lerp(_camera.orthographicSize, _targetZoom, Time.deltaTime * zoomLerpSpeed);
@@ -100,7 +101,6 @@ public class CameraController : MonoBehaviour
 
     private void HandleMovement()
     {
-        // Нажатие
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
@@ -112,7 +112,6 @@ public class CameraController : MonoBehaviour
             }
         }
 
-        // Удержание
         if (Input.GetMouseButton(0) && _isDragging)
         {
             Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
@@ -129,13 +128,11 @@ public class CameraController : MonoBehaviour
             }
         }
 
-        // Отпускание
         if (Input.GetMouseButtonUp(0))
         {
             _isDragging = false;
         }
 
-        // Инерция (работает, когда не держим палец)
         if (!_isDragging)
         {
             if (_velocity.sqrMagnitude > 0.001f)
@@ -160,6 +157,27 @@ public class CameraController : MonoBehaviour
         }
     }
     
+    // Вспомогательный метод для изменения зума
+    private void ModifyTargetZoom(float amount)
+    {
+        _targetZoom += amount;
+        _targetZoom = Mathf.Clamp(_targetZoom, minZoom, maxZoom);
+    }
+
+    // --- PUBLIC METHODS FOR UI ---
+
+    // Приблизить (уменьшаем размер ортогональной камеры/FOV)
+    public void ZoomIn()
+    {
+        ModifyTargetZoom(-buttonZoomStep);
+    }
+
+    // Отдалить (увеличиваем размер ортогональной камеры/FOV)
+    public void ZoomOut()
+    {
+        ModifyTargetZoom(buttonZoomStep);
+    }
+
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.yellow;
