@@ -17,7 +17,7 @@ public class InteractionController : MonoBehaviour
             // Блокировка нажатия, если курсор над UI (чтобы не кликать сквозь окно улучшений)
             if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
             {
-                Debug.Log("Out");
+                // Debug.Log("Out");
                 return;
             }
 
@@ -38,7 +38,7 @@ public class InteractionController : MonoBehaviour
         }
         else
         {
-            Debug.Log("No");
+            // Debug.Log("No");
         }
     }
 }
