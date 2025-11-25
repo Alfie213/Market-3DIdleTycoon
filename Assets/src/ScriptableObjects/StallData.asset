@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: StallData
   m_EditorClassIdentifier: 
   buildingName: Stall
-  buildCost: 0
+  buildCost: 50
   profitPerCustomer: 0
   baseProcessingTime: 2
   baseWorkers: 1

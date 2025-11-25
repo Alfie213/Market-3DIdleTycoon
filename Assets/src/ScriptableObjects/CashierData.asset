@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CashierData
   m_EditorClassIdentifier: 
   buildingName: Cashier
-  buildCost: 0
+  buildCost: 100
   profitPerCustomer: 150
   baseProcessingTime: 2
   baseWorkers: 1
