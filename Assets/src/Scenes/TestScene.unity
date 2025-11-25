@@ -17857,14 +17857,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b605865f6489a4445883a08a63d37b98, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  upgradeWindow: {fileID: 0}
-  buildingNameText: {fileID: 0}
-  statsText: {fileID: 0}
-  speedUpgradeBtn: {fileID: 0}
-  speedCostText: {fileID: 0}
-  workersUpgradeBtn: {fileID: 0}
-  workersCostText: {fileID: 0}
-  closeBtn: {fileID: 0}
+  view: {fileID: 0}
 --- !u!1001 &1405600777
 PrefabInstance:
   m_ObjectHideFlags: 0

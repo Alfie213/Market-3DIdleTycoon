@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,47 +11,57 @@ public class BuildingController : MonoBehaviour
     [SerializeField] private GameObject visualModel;
     [SerializeField] private GameObject constructionSiteVisuals;
     
-    [Header("Points")]
-    [SerializeField] private Transform interactionPoint; // Куда идут NPC
-    [SerializeField] private Transform queueStartPoint;  // Где начинается очередь
+    [Header("Configuration")]
+    [SerializeField] private Transform interactionPoint;
+    [SerializeField] private Transform queueStartPoint;
+    [Tooltip("Список точек, где стоят работники. Размер списка ограничивает макс. прокачку.")]
+    [SerializeField] private List<WorkerPoint> workerPoints; 
+
+    public event Action OnStatsChanged;
 
     private bool _isBuilt = false;
     private readonly Queue<Customer> _customerQueue = new Queue<Customer>();
     
-    // Runtime Stats (могут улучшаться)
-    private int _currentMaxWorkers;
+    private int _currentUnlockedWorkers;
     private float _currentProcessingTime;
-    private int _activeWorkersCount = 0;
 
     public BuildingData Data => buildingData;
     public bool IsBuilt => _isBuilt;
     public Transform InteractionPoint => interactionPoint;
     
-    // Свойства для UI улучшений
-    public int CurrentMaxWorkers => _currentMaxWorkers;
+    public int CurrentUnlockedWorkers => _currentUnlockedWorkers;
+    public int MaxPossibleWorkers => buildingData.MaxPossibleWorkers;
     public float CurrentProcessingTime => _currentProcessingTime;
+    // Считаем занятых, опрашивая точки
+    public int ActiveWorkersCount 
+    {
+        get 
+        {
+            int count = 0;
+            foreach (var wp in workerPoints) if (wp.IsBusy) count++;
+            return count;
+        }
+    }
 
     private void Awake()
     {
-        // Инициализация статов из Data
-        _currentMaxWorkers = buildingData.BaseMaxWorkers;
+        // Начинаем с базового кол-ва, но не больше, чем точек на сцене
+        _currentUnlockedWorkers = Mathf.Min(buildingData.BaseWorkers, buildingData.MaxPossibleWorkers);
         _currentProcessingTime = buildingData.BaseProcessingTime;
         
         UpdateVisuals();
     }
 
-    // Метод взаимодействия (вызывается из InteractionController)
+    private void Start()
+    {
+        // Инициализация точек при старте
+        RefreshWorkerPoints();
+    }
+
     public void Interact()
     {
-        if (!_isBuilt)
-        {
-            TryConstruct();
-        }
-        else
-        {
-            // Здание уже построено -> Открываем окно улучшений
-            GameEvents.InvokeUpgradeWindowRequested(this);
-        }
+        if (!_isBuilt) TryConstruct();
+        else GameEvents.InvokeUpgradeWindowRequested(this);
     }
 
     private void TryConstruct()
@@ -59,21 +70,40 @@ public class BuildingController : MonoBehaviour
         {
             _isBuilt = true;
             UpdateVisuals();
+            RefreshWorkerPoints(); // Показываем работников после постройки
             GameEvents.InvokeBuildingConstructed(this);
         }
     }
 
     public void UpgradeSpeed()
     {
-        // Пример логики: уменьшаем время на 10%, минимум 0.5 сек
-        _currentProcessingTime = Mathf.Max(0.5f, _currentProcessingTime * 0.9f);
+        _currentProcessingTime = Mathf.Max(0.1f, _currentProcessingTime * 0.9f);
+        OnStatsChanged?.Invoke();
     }
 
     public void UpgradeWorkers()
     {
-        _currentMaxWorkers++;
-        // Если очередь ждала свободного работника, запускаем обработку
+        if (_currentUnlockedWorkers >= buildingData.MaxPossibleWorkers) return;
+
+        _currentUnlockedWorkers++;
+        RefreshWorkerPoints();
         TryProcessNextCustomer();
+        OnStatsChanged?.Invoke();
+    }
+
+    private void RefreshWorkerPoints()
+    {
+        if (!_isBuilt)
+        {
+            foreach (var wp in workerPoints) wp.SetUnlocked(false);
+            return;
+        }
+
+        for (int i = 0; i < workerPoints.Count; i++)
+        {
+            bool shouldBeActive = i < _currentUnlockedWorkers;
+            workerPoints[i].SetUnlocked(shouldBeActive);
+        }
     }
 
     private void UpdateVisuals()
@@ -82,7 +112,7 @@ public class BuildingController : MonoBehaviour
         if (constructionSiteVisuals) constructionSiteVisuals.SetActive(!_isBuilt);
     }
 
-    // --- Логика Очереди и Клиентов ---
+    // --- Очередь и Обработка ---
 
     public bool CanAcceptCustomer()
     {
@@ -98,43 +128,56 @@ public class BuildingController : MonoBehaviour
 
     private void TryProcessNextCustomer()
     {
-        // Если есть клиенты И есть свободные работники
-        if (_customerQueue.Count > 0 && _activeWorkersCount < _currentMaxWorkers)
+        if (_customerQueue.Count == 0) return;
+
+        // Ищем свободного работника
+        WorkerPoint freePoint = GetFreeWorkerPoint();
+        
+        if (freePoint != null)
         {
-            StartCoroutine(ProcessCustomerRoutine());
+            StartCoroutine(ProcessCustomerRoutine(freePoint));
         }
     }
 
-    private IEnumerator ProcessCustomerRoutine()
+    private WorkerPoint GetFreeWorkerPoint()
     {
-        _activeWorkersCount++;
-        
-        // Берем клиента, но пока не удаляем из очереди (он стоит у кассы)
-        Customer currentCustomer = _customerQueue.Peek();
-        
-        yield return new WaitForSeconds(_currentProcessingTime);
-
-        // Обработка завершена
-        CompleteTransaction();
-        
-        // Отпускаем клиента
-        currentCustomer.CompleteCurrentTask();
-        _customerQueue.Dequeue();
-        
-        _activeWorkersCount--;
-        
-        UpdateQueuePositions();
-        
-        // Пробуем взять следующего, если есть свободные слоты (рекурсия через событие завершения)
-        TryProcessNextCustomer(); 
+        foreach (var wp in workerPoints)
+        {
+            if (wp.IsUnlocked && !wp.IsBusy) return wp;
+        }
+        return null;
     }
 
-    private void CompleteTransaction()
+    private IEnumerator ProcessCustomerRoutine(WorkerPoint workerPoint)
     {
+        workerPoint.SetBusy(true);
+        OnStatsChanged?.Invoke();
+
+        Customer currentCustomer = _customerQueue.Peek();
+        
+        // Логика прогресс-бара
+        float timer = 0f;
+        while (timer < _currentProcessingTime)
+        {
+            timer += Time.deltaTime;
+            workerPoint.UpdateProgress(timer / _currentProcessingTime);
+            yield return null;
+        }
+
+        // Завершение
         if (buildingData.ProfitPerCustomer > 0)
         {
             CurrencyController.Instance.AddCurrency(buildingData.ProfitPerCustomer);
         }
+
+        currentCustomer.CompleteCurrentTask();
+        _customerQueue.Dequeue();
+        
+        workerPoint.SetBusy(false);
+        OnStatsChanged?.Invoke();
+        
+        UpdateQueuePositions();
+        TryProcessNextCustomer(); 
     }
 
     private void UpdateQueuePositions()
@@ -142,8 +185,6 @@ public class BuildingController : MonoBehaviour
         int index = 0;
         foreach (var customer in _customerQueue)
         {
-            // Формируем очередь назад от точки старта
-            // Z - backward, чтобы очередь выстраивалась "назад"
             Vector3 targetPos = queueStartPoint.position - (queueStartPoint.forward * index * 1.5f);
             customer.MoveToPosition(targetPos);
             index++;
