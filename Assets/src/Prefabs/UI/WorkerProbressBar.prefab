@@ -38,7 +38,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: -0, y: 0}
-  m_SizeDelta: {x: 8.4303, y: 3.2834}
+  m_SizeDelta: {x: 5.335, y: 3.2834}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!223 &3531390471005468730
 Canvas:
@@ -85,7 +85,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 0
+  m_PresetInfoIsWorld: 1
 --- !u!114 &6086121221446022813
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -280,6 +280,12 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6032858718260641886, guid: d5eddc7717b99d14ebd61778cefabbae,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 5014461874272990811, guid: e48c6d8deee79854582bcfa4c7f93d4b,
+        type: 3}
     - target: {fileID: 6307524220549610138, guid: d5eddc7717b99d14ebd61778cefabbae,
         type: 3}
       propertyPath: m_IsActive

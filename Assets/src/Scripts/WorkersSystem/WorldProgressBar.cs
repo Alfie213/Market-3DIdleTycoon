@@ -16,10 +16,10 @@ public class WorldProgressBar : MonoBehaviour
 
     private void LateUpdate()
     {
-        // Поворот к камере (Billboard эффект)
         if (visuals.activeSelf)
         {
-            transform.rotation = _mainCamera.transform.rotation;
+            // Полоска поворачивается к камере, но только по оси Y (чтобы не заваливалась назад)
+            transform.LookAt(transform.position + _mainCamera.transform.rotation * Vector3.forward, _mainCamera.transform.rotation * Vector3.up);
         }
     }
 
