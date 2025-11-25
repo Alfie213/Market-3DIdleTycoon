@@ -13,8 +13,11 @@ MonoBehaviour:
   m_Name: StallData
   m_EditorClassIdentifier: 
   buildingName: Stall
-  type: 0
-  cost: 50
-  processingTime: 2
-  maxQueueCapacity: 1
+  buildCost: 0
   profitPerCustomer: 0
+  baseProcessingTime: 7
+  baseWorkers: 1
+  maxPossibleWorkers: 4
+  maxQueueCapacity: 1
+  speedUpgradeCost: 100
+  workerUpgradeCost: 250

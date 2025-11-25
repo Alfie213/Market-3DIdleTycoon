@@ -7997,7 +7997,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.29531112}
   m_AnchorMax: {x: 1, y: 0.5316889}
-  m_AnchoredPosition: {x: -0.19000244, y: 0.5999756}
+  m_AnchoredPosition: {x: -0.1899414, y: 0.5999756}
   m_SizeDelta: {x: 0.40625, y: 3}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &541722700
@@ -16797,7 +16797,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5316889}
   m_AnchorMax: {x: 1, y: 0.8327334}
-  m_AnchoredPosition: {x: 0.010009766, y: 0.56900024}
+  m_AnchoredPosition: {x: 0.010009766, y: 0.56903076}
   m_SizeDelta: {x: 0.8, y: 0.53699875}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1335176330
@@ -17558,7 +17558,7 @@ MonoBehaviour:
   m_OverrideTileSize: 0
   m_TileSize: 256
   m_OverrideVoxelSize: 0
-  m_VoxelSize: 0.083333336
+  m_VoxelSize: 0.06666667
   m_MinRegionArea: 2
   m_NavMeshData: {fileID: 23800000, guid: 773217665c33d1a47a6a1448fed1b529, type: 2}
   m_BuildHeightMesh: 0
