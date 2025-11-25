@@ -15315,7 +15315,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   customerPrefabs:
-  - {fileID: 1339389322787277654, guid: a05569a5ed81a9d4cb9b5dcea0e4f9c9, type: 3}
+  - {fileID: 2527946853430759641, guid: 86d0a1087e43de5419ed06b522879455, type: 3}
+  - {fileID: 3585639053973203590, guid: ce8f2c5258e190e4db0409c3dfe20bf1, type: 3}
+  - {fileID: 4023388820130706470, guid: 682ae3f2ab7354e43a20d97a5b96d5b9, type: 3}
+  - {fileID: 3227173341093624146, guid: 20e1d543f0b89ee43b4814dbee971343, type: 3}
+  - {fileID: 6105649951700454276, guid: 94b5f828b0cb3144a98e293006ceacd4, type: 3}
+  - {fileID: 127550019233946136, guid: 57cea3695eb0f0d4d93d4fcc1ec56949, type: 3}
+  - {fileID: 434107276270875626, guid: e398976672038a848a80c0cf57c7875d, type: 3}
+  - {fileID: 1171439133134757191, guid: e135e0f77af0afe43ab9f4164ac41d10, type: 3}
+  - {fileID: 2450335880281364711, guid: 9db1b1c8ded4d554a9e0e3fb729b5ab0, type: 3}
+  - {fileID: 3925802224156839604, guid: 81e9e610ad0d39d4b8f919429c5659b5, type: 3}
+  - {fileID: 8126505911612656286, guid: b479932f21074f54fa0ddadf19b76d25, type: 3}
+  - {fileID: 8489595108130032710, guid: acd4df3facbf62144ae49ead9a3bdb30, type: 3}
   storeRoute:
   - {fileID: 5450750792104075950}
   - {fileID: 19699391}
