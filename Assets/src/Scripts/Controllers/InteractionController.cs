@@ -30,7 +30,7 @@ public class InteractionController : MonoBehaviour
         Ray ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hit, 1000f, buildingLayer))
         {
-            Debug.Log(hit.collider.gameObject.name);
+            // Debug.Log(hit.collider.gameObject.name);
             if (hit.collider.TryGetComponent(out BuildingController building))
             {
                 building.Interact();

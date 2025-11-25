@@ -15,7 +15,7 @@ MonoBehaviour:
   buildingName: Cashier
   buildCost: 0
   profitPerCustomer: 150
-  baseProcessingTime: 7
+  baseProcessingTime: 2
   baseWorkers: 1
   maxPossibleWorkers: 4
   maxQueueCapacity: 1

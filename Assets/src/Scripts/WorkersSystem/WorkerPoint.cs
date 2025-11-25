@@ -10,10 +10,8 @@ public class WorkerPoint : MonoBehaviour
     [SerializeField] private WorldProgressBar progressBar;
     
     [Header("Configuration")]
-    [Tooltip("Точка, где стоит ПЕРВЫЙ клиент в этой очереди")]
     [SerializeField] private Transform queueOrigin; 
 
-    // Событие, чтобы уведомить здание об изменении статуса (для UI)
     public event Action OnStateChanged;
 
     private bool _isUnlocked = false;
@@ -29,11 +27,9 @@ public class WorkerPoint : MonoBehaviour
 
     private void Awake()
     {
-        // Скрываем бар при старте
         if (progressBar) progressBar.Hide();
     }
 
-    // Инициализация данных (вызывается из BuildingController)
     public void Initialize(float processTime, int profit)
     {
         _processingTime = processTime;
@@ -48,8 +44,6 @@ public class WorkerPoint : MonoBehaviour
         if (!state)
         {
             progressBar.Hide();
-            // Тут можно добавить логику разгона очереди, если точку закрыли,
-            // но для прототипа считаем, что закрыть купленное нельзя.
         }
         OnStateChanged?.Invoke();
     }
@@ -58,8 +52,6 @@ public class WorkerPoint : MonoBehaviour
     {
         _localQueue.Enqueue(customer);
         UpdateQueuePositions();
-        
-        // Если работник свободен, начинаем обслуживание
         TryProcessNext();
     }
 
@@ -77,7 +69,20 @@ public class WorkerPoint : MonoBehaviour
 
         Customer currentCustomer = _localQueue.Peek();
         
-        // Логика прогресс-бара
+        // 1. Убеждаемся, что клиент знает, что ему нужно встать ровно в точку обслуживания
+        // (Хотя UpdateQueuePositions уже должен был это сделать, дублируем для надежности)
+        currentCustomer.MoveToPosition(queueOrigin.position);
+
+        // 2. ФАЗА ОЖИДАНИЯ: Ждем, пока клиент физически дойдет до кассы
+        // Добавляем небольшой таймаут (на всякий случай, если он застрянет)
+        float arrivalTimeout = 10f; 
+        while (!currentCustomer.IsAtTargetPosition() && arrivalTimeout > 0)
+        {
+            arrivalTimeout -= Time.deltaTime;
+            yield return null; // Ждем следующий кадр
+        }
+
+        // 3. ФАЗА ОБРАБОТКИ: Клиент пришел, запускаем таймер
         float timer = 0f;
         while (timer < _processingTime)
         {
@@ -86,22 +91,19 @@ public class WorkerPoint : MonoBehaviour
             yield return null;
         }
 
-        // Награда
+        // 4. ЗАВЕРШЕНИЕ
         if (_profit > 0)
         {
             CurrencyController.Instance.AddCurrency(_profit);
         }
 
-        // Отпускаем клиента
         currentCustomer.CompleteCurrentTask();
         _localQueue.Dequeue();
 
-        // Сброс состояния
         if (progressBar) progressBar.Hide();
         _isBusy = false;
         OnStateChanged?.Invoke();
 
-        // Двигаем очередь и берем следующего
         UpdateQueuePositions();
         TryProcessNext();
     }
@@ -111,7 +113,6 @@ public class WorkerPoint : MonoBehaviour
         int index = 0;
         foreach (var customer in _localQueue)
         {
-            // Строим очередь назад от queueOrigin этого конкретного работника
             Vector3 targetPos = queueOrigin.position - (queueOrigin.forward * index * 1.5f);
             customer.MoveToPosition(targetPos);
             index++;

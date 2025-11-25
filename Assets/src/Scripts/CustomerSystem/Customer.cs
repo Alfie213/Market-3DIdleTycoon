@@ -9,7 +9,6 @@ public class Customer : MonoBehaviour
     private NavMeshAgent _agent;
     private Animator _animator;
     
-    // Хеширование имени параметра для оптимизации (быстрее, чем сравнение строк каждый кадр)
     private static readonly int IsMovingKey = Animator.StringToHash("IsMoving");
 
     private Queue<BuildingController> _shoppingList;
@@ -17,12 +16,15 @@ public class Customer : MonoBehaviour
     private Vector3 _exitPosition;
     private bool _isWaitingInQueue;
 
+    private const float InteractionRadius = 2.0f; 
+
     private void Awake()
     {
         _agent = GetComponent<NavMeshAgent>();
         _animator = GetComponent<Animator>();
     }
 
+    // ... (Initialize и GoToNextTarget без изменений) ...
     public void Initialize(BuildingController[] route, Vector3 exitPos)
     {
         _shoppingList = new Queue<BuildingController>(route);
@@ -40,12 +42,14 @@ public class Customer : MonoBehaviour
             if (_currentTarget != null)
             {
                 _agent.SetDestination(_currentTarget.InteractionPoint.position);
+                _agent.stoppingDistance = InteractionRadius; 
             }
         }
         else
         {
             _currentTarget = null;
             _agent.SetDestination(_exitPosition);
+            _agent.stoppingDistance = 0f; 
             Destroy(gameObject, 5f); 
         }
     }
@@ -58,11 +62,7 @@ public class Customer : MonoBehaviour
 
     private void HandleAnimations()
     {
-        // Проверяем квадрат магнитуды скорости (это быстрее, чем обычная magnitude)
-        // 0.1f — небольшой порог, чтобы отсеять микро-движения агента
         bool isMoving = _agent.velocity.sqrMagnitude > 0.1f;
-        
-        // Передаем значение в аниматор
         _animator.SetBool(IsMovingKey, isMoving);
     }
 
@@ -70,10 +70,15 @@ public class Customer : MonoBehaviour
     {
         if (_currentTarget == null || _isWaitingInQueue) return;
 
-        // Проверка: дошли ли до точки взаимодействия
-        if (!_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance)
+        if (!_agent.pathPending)
         {
-            TryJoinQueue();
+            float dist = _agent.remainingDistance;
+            if (float.IsInfinity(dist)) dist = Vector3.Distance(transform.position, _currentTarget.InteractionPoint.position);
+
+            if (dist <= InteractionRadius)
+            {
+                TryJoinQueue();
+            }
         }
     }
 
@@ -82,8 +87,6 @@ public class Customer : MonoBehaviour
         if (_currentTarget.CanAcceptCustomer())
         {
             _isWaitingInQueue = true;
-            // При остановке в очереди агент сам сбросит скорость в 0, 
-            // и HandleAnimations автоматически включит Idle
             _agent.ResetPath(); 
             _currentTarget.EnqueueCustomer(this);
         }
@@ -91,8 +94,16 @@ public class Customer : MonoBehaviour
 
     public void MoveToPosition(Vector3 position)
     {
-        // Когда очередь двигается, агент получает новую точку -> скорость растет -> включается Walk
+        _agent.stoppingDistance = 0.1f; 
         _agent.SetDestination(position);
+    }
+
+    // НОВЫЙ МЕТОД: Проверяем, дошел ли агент до назначенной точки
+    public bool IsAtTargetPosition()
+    {
+        if (_agent.pathPending) return false;
+        // Считаем, что дошли, если дистанция меньше чуть большего порога, чем stoppingDistance
+        return _agent.remainingDistance <= _agent.stoppingDistance + 0.1f;
     }
 
     public void CompleteCurrentTask()

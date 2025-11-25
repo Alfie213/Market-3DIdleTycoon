@@ -15,7 +15,7 @@ MonoBehaviour:
   buildingName: Stall
   buildCost: 0
   profitPerCustomer: 0
-  baseProcessingTime: 7
+  baseProcessingTime: 2
   baseWorkers: 1
   maxPossibleWorkers: 4
   maxQueueCapacity: 1
