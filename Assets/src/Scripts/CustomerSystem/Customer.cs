@@ -3,9 +3,15 @@ using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent))]
+[RequireComponent(typeof(Animator))]
 public class Customer : MonoBehaviour
 {
     private NavMeshAgent _agent;
+    private Animator _animator;
+    
+    // Хеширование имени параметра для оптимизации (быстрее, чем сравнение строк каждый кадр)
+    private static readonly int IsMovingKey = Animator.StringToHash("IsMoving");
+
     private Queue<BuildingController> _shoppingList;
     private BuildingController _currentTarget;
     private Vector3 _exitPosition;
@@ -14,6 +20,7 @@ public class Customer : MonoBehaviour
     private void Awake()
     {
         _agent = GetComponent<NavMeshAgent>();
+        _animator = GetComponent<Animator>();
     }
 
     public void Initialize(BuildingController[] route, Vector3 exitPos)
@@ -45,6 +52,22 @@ public class Customer : MonoBehaviour
 
     private void Update()
     {
+        HandleAnimations();
+        HandleNavigation();
+    }
+
+    private void HandleAnimations()
+    {
+        // Проверяем квадрат магнитуды скорости (это быстрее, чем обычная magnitude)
+        // 0.1f — небольшой порог, чтобы отсеять микро-движения агента
+        bool isMoving = _agent.velocity.sqrMagnitude > 0.1f;
+        
+        // Передаем значение в аниматор
+        _animator.SetBool(IsMovingKey, isMoving);
+    }
+
+    private void HandleNavigation()
+    {
         if (_currentTarget == null || _isWaitingInQueue) return;
 
         // Проверка: дошли ли до точки взаимодействия
@@ -59,18 +82,16 @@ public class Customer : MonoBehaviour
         if (_currentTarget.CanAcceptCustomer())
         {
             _isWaitingInQueue = true;
+            // При остановке в очереди агент сам сбросит скорость в 0, 
+            // и HandleAnimations автоматически включит Idle
+            _agent.ResetPath(); 
             _currentTarget.EnqueueCustomer(this);
-        }
-        else
-        {
-            // Простая логика: если очередь полна, ждем на месте (idle)
-            // В будущем здесь можно сделать логику ухода или ожидания в стороне
         }
     }
 
     public void MoveToPosition(Vector3 position)
     {
-        // Используется, когда NPC уже в очереди, чтобы двигаться за людьми
+        // Когда очередь двигается, агент получает новую точку -> скорость растет -> включается Walk
         _agent.SetDestination(position);
     }
 
