@@ -115,6 +115,8 @@ public class BuildingController : MonoBehaviour
         _currentProcessingTime = Mathf.Max(0.1f, _currentProcessingTime * 0.9f);
         RefreshWorkerPoints();
         OnStatsChanged?.Invoke();
+        
+        GameEvents.InvokeUpgradePurchased();
     }
 
     public void UpgradeWorkers()
@@ -123,6 +125,8 @@ public class BuildingController : MonoBehaviour
         _currentUnlockedWorkers++;
         RefreshWorkerPoints();
         OnStatsChanged?.Invoke();
+        
+        GameEvents.InvokeUpgradePurchased();
     }
 
     private void RefreshWorkerPoints()

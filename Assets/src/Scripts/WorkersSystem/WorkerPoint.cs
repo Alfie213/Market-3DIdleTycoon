@@ -69,20 +69,15 @@ public class WorkerPoint : MonoBehaviour
 
         Customer currentCustomer = _localQueue.Peek();
         
-        // 1. Убеждаемся, что клиент знает, что ему нужно встать ровно в точку обслуживания
-        // (Хотя UpdateQueuePositions уже должен был это сделать, дублируем для надежности)
         currentCustomer.MoveToPosition(queueOrigin.position);
 
-        // 2. ФАЗА ОЖИДАНИЯ: Ждем, пока клиент физически дойдет до кассы
-        // Добавляем небольшой таймаут (на всякий случай, если он застрянет)
         float arrivalTimeout = 10f; 
         while (!currentCustomer.IsAtTargetPosition() && arrivalTimeout > 0)
         {
             arrivalTimeout -= Time.deltaTime;
-            yield return null; // Ждем следующий кадр
+            yield return null;
         }
 
-        // 3. ФАЗА ОБРАБОТКИ: Клиент пришел, запускаем таймер
         float timer = 0f;
         while (timer < _processingTime)
         {
@@ -91,11 +86,16 @@ public class WorkerPoint : MonoBehaviour
             yield return null;
         }
 
-        // 4. ЗАВЕРШЕНИЕ
+        // --- ИСПРАВЛЕНИЕ ЗДЕСЬ ---
+        // Проверяем, приносит ли это действие деньги
         if (_profit > 0)
         {
             CurrencyController.Instance.AddCurrency(_profit);
+            
+            // Вызываем событие ТОЛЬКО если была прибыль (продажа)
+            GameEvents.InvokeCustomerServed();
         }
+        // -------------------------
 
         currentCustomer.CompleteCurrentTask();
         _localQueue.Dequeue();
