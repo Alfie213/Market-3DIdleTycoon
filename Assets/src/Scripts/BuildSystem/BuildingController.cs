@@ -82,12 +82,19 @@ public class BuildingController : MonoBehaviour
         }
         else
         {
-            // --- НОВАЯ ЛОГИКА ---
-            // Если магазин еще закрыт (не построены стартовые здания),
-            // мы запрещаем открывать окно апгрейдов, чтобы игрок не слил деньги.
+            // 1. Проверка магазина (уже была)
             if (ShopController.Instance != null && !ShopController.Instance.IsShopOpen)
             {
-                Debug.Log("Сначала постройте все необходимые здания!");
+                // Можно добавить визуальный фидбек (звук ошибки или всплывающий текст)
+                return;
+            }
+
+            // 2. НОВАЯ ПРОВЕРКА ТУТОРИАЛА
+            if (TutorialController.Instance != null && !TutorialController.Instance.IsUpgradesAllowed)
+            {
+                // Игрок пытается нажать раньше времени.
+                // Можно вывести лог или подсказку "Wait for customers!"
+                Debug.Log("Wait for the tutorial instruction!");
                 return;
             }
             

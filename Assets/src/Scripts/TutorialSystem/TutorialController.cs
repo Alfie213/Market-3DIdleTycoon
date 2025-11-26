@@ -2,22 +2,33 @@ using UnityEngine;
 
 public class TutorialController : MonoBehaviour
 {
+    public static TutorialController Instance { get; private set; }
+
     [SerializeField] private TutorialView view;
 
-    private enum TutorialStep
+    public enum TutorialStep
     {
-        BuildStalls,    // 1. Построй здания
-        WaitForCustomers, // 2. Жди клиентов
-        FirstSaleMade,  // 3. Клиент обслужен, нужно открыть окно апгрейда
-        UpgradeDone,    // 4. Апгрейд куплен, финал
-        Completed       // Обучение завершено
+        BuildStalls = 0,
+        WaitForCustomers = 1,
+        FirstSaleMade = 2,  // Начиная с этого шага можно открывать окно
+        UpgradeDone = 3,
+        Completed = 4
     }
 
     private TutorialStep _currentStep = TutorialStep.BuildStalls;
 
+    // Публичное свойство: Разрешены ли улучшения?
+    // Разрешены, если мы дошли до шага FirstSaleMade ИЛИ закончили обучение.
+    public bool IsUpgradesAllowed => _currentStep >= TutorialStep.FirstSaleMade;
+
+    private void Awake()
+    {
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+    }
+
     private void Start()
     {
-        // Шаг 1: Старт игры
         ShowMessage("Welcome! Buy the Cashier and the Vegetable Stall to open your market.");
     }
 
@@ -35,7 +46,6 @@ public class TutorialController : MonoBehaviour
         GameEvents.OnUpgradePurchased -= HandleUpgradePurchased;
     }
 
-    // Событие: Магазин открылся (построены оба здания)
     private void HandleShopOpened()
     {
         if (_currentStep == TutorialStep.BuildStalls)
@@ -45,25 +55,20 @@ public class TutorialController : MonoBehaviour
         }
     }
 
-    // Событие: Кто-то купил товар
     private void HandleCustomerServed()
     {
-        // Реагируем только если мы на шаге ожидания клиентов
         if (_currentStep == TutorialStep.WaitForCustomers)
         {
             _currentStep = TutorialStep.FirstSaleMade;
-            ShowMessage("First profit! Tap on any building to open the Upgrade Menu.");
+            // Обновленный текст с призывом к действию
+            ShowMessage("First profit made! Tap on a building and BUY an upgrade to boost efficiency!");
         }
     }
 
-    // Событие: Игрок купил улучшение
     private void HandleUpgradePurchased()
     {
-        // Реагируем только если мы на шаге "Сделай апгрейд"
-        // (Или если мы еще на шаге WaitForCustomers, но игрок быстрый и успел проапгрейдить раньше времени - тоже засчитаем)
         if (_currentStep == TutorialStep.FirstSaleMade || _currentStep == TutorialStep.WaitForCustomers)
         {
-            _currentStep = TutorialStep.UpgradeDone;
             FinishTutorial();
         }
     }
@@ -71,11 +76,7 @@ public class TutorialController : MonoBehaviour
     private void FinishTutorial()
     {
         _currentStep = TutorialStep.Completed;
-        // Показываем финал и скрываем через 5 секунд
         view.ShowAndHideDelayed("You are a professional businessman now! Keep expanding to succeed.", 6f);
-        
-        // Тут можно отключить сам объект контроллера, если он больше не нужен
-        // Destroy(this); 
     }
 
     private void ShowMessage(string text)
