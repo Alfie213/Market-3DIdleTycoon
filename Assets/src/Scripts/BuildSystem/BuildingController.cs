@@ -9,10 +9,10 @@ public class BuildingController : MonoBehaviour
     [Header("Visuals")]
     [SerializeField] private GameObject visualModel;
     [SerializeField] private GameObject constructionSiteVisuals;
+    [SerializeField] private ConstructionPriceDisplay priceDisplay; 
     
     [Header("Interaction")]
-    [SerializeField] private Transform interactionPoint; // Точка входа в здание
-    // QueueStartPoint больше не нужен здесь, он теперь внутри WorkerPoint
+    [SerializeField] private Transform interactionPoint; 
     
     [Header("Workers")]
     [SerializeField] private List<WorkerPoint> workerPoints; 
@@ -20,19 +20,16 @@ public class BuildingController : MonoBehaviour
     public event Action OnStatsChanged;
 
     private bool _isBuilt = false;
-    
-    // Текущие статы (храним тут, чтобы раздавать работникам)
     private int _currentUnlockedWorkers;
     private float _currentProcessingTime;
 
+    // Свойства...
     public BuildingData Data => buildingData;
     public bool IsBuilt => _isBuilt;
     public Transform InteractionPoint => interactionPoint;
-    
     public int CurrentUnlockedWorkers => _currentUnlockedWorkers;
     public int MaxPossibleWorkers => buildingData.MaxPossibleWorkers;
     public float CurrentProcessingTime => _currentProcessingTime;
-    
     public int ActiveWorkersCount 
     {
         get 
@@ -48,7 +45,6 @@ public class BuildingController : MonoBehaviour
         _currentUnlockedWorkers = Mathf.Min(buildingData.BaseWorkers, buildingData.MaxPossibleWorkers);
         _currentProcessingTime = buildingData.BaseProcessingTime;
         
-        // Подписываемся на изменения каждого работника, чтобы обновлять UI
         foreach (var wp in workerPoints)
         {
             wp.OnStateChanged += () => OnStatsChanged?.Invoke();
@@ -59,7 +55,23 @@ public class BuildingController : MonoBehaviour
 
     private void Start()
     {
+        if (priceDisplay != null)
+        {
+            priceDisplay.SetPrice(buildingData.BuildCost);
+            // ПОДПИСКА НА КНОПКУ
+            priceDisplay.OnBuyClicked += TryConstruct;
+        }
+
         RefreshWorkerPoints();
+    }
+
+    private void OnDestroy()
+    {
+        // ОТПИСКА (Хороший тон, чтобы избежать утечек памяти)
+        if (priceDisplay != null)
+        {
+            priceDisplay.OnBuyClicked -= TryConstruct;
+        }
     }
 
     public void Interact()
@@ -68,8 +80,11 @@ public class BuildingController : MonoBehaviour
         else GameEvents.InvokeUpgradeWindowRequested(this);
     }
 
+    // Этот метод теперь вызывается и при клике по 3D модели, и при клике по кнопке
     private void TryConstruct()
     {
+        if (_isBuilt) return; // Защита от двойного нажатия
+
         if (CurrencyController.Instance.TrySpendCurrency(buildingData.BuildCost))
         {
             _isBuilt = true;
@@ -79,10 +94,10 @@ public class BuildingController : MonoBehaviour
         }
     }
 
+    // ... (Остальные методы: UpgradeSpeed, UpgradeWorkers, RefreshWorkerPoints и т.д. без изменений) ...
     public void UpgradeSpeed()
     {
         _currentProcessingTime = Mathf.Max(0.1f, _currentProcessingTime * 0.9f);
-        // Обновляем данные всем работникам
         RefreshWorkerPoints();
         OnStatsChanged?.Invoke();
     }
@@ -90,13 +105,11 @@ public class BuildingController : MonoBehaviour
     public void UpgradeWorkers()
     {
         if (_currentUnlockedWorkers >= buildingData.MaxPossibleWorkers) return;
-
         _currentUnlockedWorkers++;
         RefreshWorkerPoints();
         OnStatsChanged?.Invoke();
     }
 
-    // Раздаем актуальные статы и включаем/выключаем точки
     private void RefreshWorkerPoints()
     {
         if (!_isBuilt)
@@ -108,8 +121,6 @@ public class BuildingController : MonoBehaviour
         for (int i = 0; i < workerPoints.Count; i++)
         {
             bool shouldBeActive = i < _currentUnlockedWorkers;
-            
-            // Передаем скорость и профит (на случай если апгрейдили)
             workerPoints[i].Initialize(_currentProcessingTime, buildingData.ProfitPerCustomer);
             workerPoints[i].SetUnlocked(shouldBeActive);
         }
@@ -119,21 +130,21 @@ public class BuildingController : MonoBehaviour
     {
         if (visualModel) visualModel.SetActive(_isBuilt);
         if (constructionSiteVisuals) constructionSiteVisuals.SetActive(!_isBuilt);
+
+        if (priceDisplay != null)
+        {
+            if (_isBuilt) priceDisplay.Hide();
+            else priceDisplay.Show();
+        }
     }
-
-    // --- Логика Распределения Клиентов ---
-
+    
+    // ... CanAcceptCustomer, EnqueueCustomer, GetBestWorkerPoint без изменений ...
     public bool CanAcceptCustomer()
     {
         if (!_isBuilt) return false;
-
-        // Если есть хотя бы одна очередь, где место не забито до отказа
         foreach (var wp in workerPoints)
         {
-            if (wp.IsUnlocked && wp.QueueCount < buildingData.MaxQueueCapacity)
-            {
-                return true;
-            }
+            if (wp.IsUnlocked && wp.QueueCount < buildingData.MaxQueueCapacity) return true;
         }
         return false;
     }
@@ -141,19 +152,9 @@ public class BuildingController : MonoBehaviour
     public void EnqueueCustomer(Customer customer)
     {
         WorkerPoint bestPoint = GetBestWorkerPoint();
-        
-        if (bestPoint != null)
-        {
-            bestPoint.EnqueueCustomer(customer);
-        }
-        else
-        {
-            // Критическая ситуация (не должно случаться при проверке CanAcceptCustomer)
-            Debug.LogWarning("No worker points available!");
-        }
+        if (bestPoint != null) bestPoint.EnqueueCustomer(customer);
     }
 
-    // Ищем самую свободную кассу
     private WorkerPoint GetBestWorkerPoint()
     {
         WorkerPoint bestPoint = null;
@@ -162,17 +163,13 @@ public class BuildingController : MonoBehaviour
         foreach (var wp in workerPoints)
         {
             if (!wp.IsUnlocked) continue;
-
-            // Если нашли пустую кассу - сразу туда
             if (wp.QueueCount == 0) return wp;
-
             if (wp.QueueCount < minQueue && wp.QueueCount < buildingData.MaxQueueCapacity)
             {
                 minQueue = wp.QueueCount;
                 bestPoint = wp;
             }
         }
-
         return bestPoint;
     }
 }

@@ -1,27 +1,18 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class WorldProgressBar : MonoBehaviour
+public class WorldProgressBar : WorldSpaceBillboard // Наследуем
 {
     [SerializeField] private Slider slider;
     [SerializeField] private GameObject visuals;
-    
-    private Camera _mainCamera;
 
-    private void Awake()
+    protected override void Awake()
     {
-        _mainCamera = Camera.main;
+        base.Awake(); // Важно вызывать base.Awake(), чтобы найти камеру
         Hide();
     }
-
-    private void LateUpdate()
-    {
-        if (visuals.activeSelf)
-        {
-            // Полоска поворачивается к камере, но только по оси Y (чтобы не заваливалась назад)
-            transform.LookAt(transform.position + _mainCamera.transform.rotation * Vector3.forward, _mainCamera.transform.rotation * Vector3.up);
-        }
-    }
+    
+    // LateUpdate больше не нужен, он есть в родителе
 
     public void SetProgress(float value)
     {
