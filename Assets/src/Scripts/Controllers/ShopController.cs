@@ -3,10 +3,22 @@ using UnityEngine;
 
 public class ShopController : MonoBehaviour
 {
+    public static ShopController Instance { get; private set; }
+
     [SerializeField] private List<BuildingController> requiredBuildings;
     
     private HashSet<BuildingController> _builtBuildings = new HashSet<BuildingController>();
     private bool _isOpen = false;
+
+    // Публичное свойство для проверки статуса
+    public bool IsShopOpen => _isOpen;
+
+    private void Awake()
+    {
+        // Базовая реализация Singleton для сцены
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+    }
 
     private void OnEnable()
     {
@@ -29,6 +41,7 @@ public class ShopController : MonoBehaviour
 
     private void CheckOpenCondition()
     {
+        // Проверяем, все ли обязательные здания есть в списке построенных
         foreach (var required in requiredBuildings)
         {
             if (!_builtBuildings.Contains(required)) return;
@@ -41,5 +54,6 @@ public class ShopController : MonoBehaviour
     {
         _isOpen = true;
         GameEvents.InvokeShopOpened();
+        Debug.Log("Shop is now OPEN! Customers started coming.");
     }
 }

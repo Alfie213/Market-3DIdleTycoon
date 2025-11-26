@@ -76,8 +76,23 @@ public class BuildingController : MonoBehaviour
 
     public void Interact()
     {
-        if (!_isBuilt) TryConstruct();
-        else GameEvents.InvokeUpgradeWindowRequested(this);
+        if (!_isBuilt)
+        {
+            TryConstruct();
+        }
+        else
+        {
+            // --- НОВАЯ ЛОГИКА ---
+            // Если магазин еще закрыт (не построены стартовые здания),
+            // мы запрещаем открывать окно апгрейдов, чтобы игрок не слил деньги.
+            if (ShopController.Instance != null && !ShopController.Instance.IsShopOpen)
+            {
+                Debug.Log("Сначала постройте все необходимые здания!");
+                return;
+            }
+            
+            GameEvents.InvokeUpgradeWindowRequested(this);
+        }
     }
 
     // Этот метод теперь вызывается и при клике по 3D модели, и при клике по кнопке
