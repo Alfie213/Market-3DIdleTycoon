@@ -62,7 +62,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5660385603588792002}
-  - {fileID: 2627860718683744145}
+  - {fileID: 5962078861829642711}
   - {fileID: 3593761750928952886}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
@@ -79,7 +79,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   workerModel: {fileID: 6884289135292468805}
-  progressBar: {fileID: 4667108560230198002}
+  progressBar: {fileID: 3891497958404052148}
   queueOrigin: {fileID: 3593761750928952886}
 --- !u!1001 &1756344478376945987
 PrefabInstance:
@@ -161,7 +161,7 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 1756344478376945987}
   m_PrefabAsset: {fileID: 0}
---- !u!1001 &7504058980105594737
+--- !u!1001 &2226541446572693815
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -282,24 +282,18 @@ PrefabInstance:
     - target: {fileID: 6589912381274851470, guid: 87a2b7806d7820f47b67f99dd9c01dd5,
         type: 3}
       propertyPath: m_Name
-      value: WorkerProbressBar
+      value: WorkerProgressBar
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 87a2b7806d7820f47b67f99dd9c01dd5, type: 3}
---- !u!224 &2627860718683744145 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 5502216240470343904, guid: 87a2b7806d7820f47b67f99dd9c01dd5,
-    type: 3}
-  m_PrefabInstance: {fileID: 7504058980105594737}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &4667108560230198002 stripped
+--- !u!114 &3891497958404052148 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2947363377677241731, guid: 87a2b7806d7820f47b67f99dd9c01dd5,
     type: 3}
-  m_PrefabInstance: {fileID: 7504058980105594737}
+  m_PrefabInstance: {fileID: 2226541446572693815}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -307,3 +301,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8f47b0b13c160348871bd700e92890b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!224 &5962078861829642711 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 5502216240470343904, guid: 87a2b7806d7820f47b67f99dd9c01dd5,
+    type: 3}
+  m_PrefabInstance: {fileID: 2226541446572693815}
+  m_PrefabAsset: {fileID: 0}

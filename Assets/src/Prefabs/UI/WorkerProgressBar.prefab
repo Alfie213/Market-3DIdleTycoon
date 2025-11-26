@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 6086121221446022813}
   - component: {fileID: 2947363377677241731}
   m_Layer: 5
-  m_Name: WorkerProbressBar
+  m_Name: WorkerProgressBar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
