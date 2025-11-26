@@ -6,11 +6,13 @@ using UnityEngine.UI;
 public class UpgradeWindowView : MonoBehaviour
 {
     [Header("Main Info")]
-    [SerializeField] private GameObject windowRoot;
+    [SerializeField] private GameObject windowRoot; // Само окно
+    [SerializeField] private GameObject blackoutObject; // Черный фон
+    
     [SerializeField] private TextMeshProUGUI buildingNameText;
     [SerializeField] private TextMeshProUGUI profitText;
     [SerializeField] private TextMeshProUGUI speedText;
-    [SerializeField] private TextMeshProUGUI workersText; // "1/4"
+    [SerializeField] private TextMeshProUGUI workersText;
 
     [Header("Actions")]
     [SerializeField] private Button closeButton;
@@ -32,7 +34,14 @@ public class UpgradeWindowView : MonoBehaviour
 
     public void SetWindowActive(bool isActive)
     {
+        // Включаем/выключаем окно
         windowRoot.SetActive(isActive);
+        
+        // Включаем/выключаем затемнение синхронно с окном
+        if (blackoutObject != null)
+        {
+            blackoutObject.SetActive(isActive);
+        }
     }
 
     public void UpdateInfo(string name, int profit)
@@ -44,7 +53,6 @@ public class UpgradeWindowView : MonoBehaviour
     public void UpdateStats(float speed, int unlockedWorkers, int maxPossibleWorkers)
     {
         speedText.text = $"Speed: {speed:F2}s";
-        // Теперь выводит: 1 / 4 (где 1 - текущий уровень прокачки, 4 - лимит)
         workersText.text = $"Workers: {unlockedWorkers}/{maxPossibleWorkers}";
     }
 
