@@ -3,20 +3,39 @@ using UnityEngine;
 
 public class CurrencyObserver : MonoBehaviour
 {
-    [SerializeField] private TextMeshProUGUI currencyCurrentAmountTMP;
+    // Массив для привязки нескольких текстовых полей (HUD, Магазин, Меню паузы и т.д.)
+    [SerializeField] private TextMeshProUGUI[] currencyTexts;
+
+    private void Start()
+    {
+        // При старте сразу показываем актуальное значение, если контроллер уже существует
+        if (CurrencyController.Instance != null)
+        {
+            UpdateVisuals(CurrencyController.Instance.CurrentCurrency);
+        }
+    }
 
     private void OnEnable()
     {
-        GameEvents.OnCurrencyChanged += EditCurrencyCount;
+        // Подписываемся на глобальное событие
+        GameEvents.OnCurrencyChanged += UpdateVisuals;
     }
 
     private void OnDisable()
     {
-        GameEvents.OnCurrencyChanged -= EditCurrencyCount;
+        GameEvents.OnCurrencyChanged -= UpdateVisuals;
     }
 
-    private void EditCurrencyCount(int currentAmount)
+    private void UpdateVisuals(int amount)
     {
-        currencyCurrentAmountTMP.text = currentAmount.ToString();
+        // Проходимся по всем привязанным текстам
+        foreach (var textMesh in currencyTexts)
+        {
+            if (textMesh != null)
+            {
+                // Интерполяция строки: Значение + Знак доллара
+                textMesh.text = $"{amount}$";
+            }
+        }
     }
 }
