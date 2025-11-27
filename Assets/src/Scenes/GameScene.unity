@@ -445,7 +445,7 @@ PrefabInstance:
     - target: {fileID: 6599644366723673433, guid: da09136444d965c46a9764721f44be72,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.045
+      value: 0.05
       objectReference: {fileID: 0}
     - target: {fileID: 6599644366723673433, guid: da09136444d965c46a9764721f44be72,
         type: 3}
@@ -455,7 +455,7 @@ PrefabInstance:
     - target: {fileID: 6599644366723673433, guid: da09136444d965c46a9764721f44be72,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -5.6297665
+      value: -6.77
       objectReference: {fileID: 0}
     - target: {fileID: 6599644366723673433, guid: da09136444d965c46a9764721f44be72,
         type: 3}
@@ -516,6 +516,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Cashier
+      objectReference: {fileID: 0}
+    - target: {fileID: 8103560461094791736, guid: da09136444d965c46a9764721f44be72,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -4.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 8103560461094791736, guid: da09136444d965c46a9764721f44be72,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -1.57
       objectReference: {fileID: 0}
     - target: {fileID: 8576362788871263644, guid: da09136444d965c46a9764721f44be72,
         type: 3}
@@ -17210,7 +17220,7 @@ MonoBehaviour:
   m_OverrideVoxelSize: 0
   m_VoxelSize: 0.06666667
   m_MinRegionArea: 2
-  m_NavMeshData: {fileID: 23800000, guid: 773217665c33d1a47a6a1448fed1b529, type: 2}
+  m_NavMeshData: {fileID: 23800000, guid: 55de655e63c29844fbe3ebb8802ce23c, type: 2}
   m_BuildHeightMesh: 0
 --- !u!1001 &1370771452
 PrefabInstance:
@@ -26578,6 +26588,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5530976829674845142, guid: 741b6f5735aab124ab42d6ab684d471d,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -10.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5530976829674845142, guid: 741b6f5735aab124ab42d6ab684d471d,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 9.28
       objectReference: {fileID: 0}
     - target: {fileID: 5535572801145481326, guid: 741b6f5735aab124ab42d6ab684d471d,
         type: 3}
