@@ -108,7 +108,7 @@ GameObject:
   - component: {fileID: 6147643143378742379}
   - component: {fileID: 6355296384853821710}
   m_Layer: 6
-  m_Name: VegetableStall
+  m_Name: MeatStall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

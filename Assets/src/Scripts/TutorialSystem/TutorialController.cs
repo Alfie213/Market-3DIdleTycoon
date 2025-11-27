@@ -29,7 +29,7 @@ public class TutorialController : MonoBehaviour
 
     private void Start()
     {
-        ShowMessage("Welcome! Buy the Cashier and the Vegetable Stall to open your market.");
+        ShowMessage("Welcome! Buy the Cashier and the Meat Stall to open your market.");
     }
 
     private void OnEnable()
