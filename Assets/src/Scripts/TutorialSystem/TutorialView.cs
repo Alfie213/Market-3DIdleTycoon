@@ -8,7 +8,7 @@ public class TutorialView : MonoBehaviour
     [SerializeField] private TextMeshProUGUI tutorialText;
     
     // Ссылка на анимацию (добавь скрипт на contentRoot или на саму панель)
-    [SerializeField] private UIPulseAnimation pulseAnimation;
+    [SerializeField] private PulseAnimation pulseAnimation;
 
     public void Show(string text)
     {

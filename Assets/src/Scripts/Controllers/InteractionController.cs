@@ -3,16 +3,13 @@ using UnityEngine.EventSystems;
 
 public class InteractionController : MonoBehaviour
 {
-    [SerializeField] private LayerMask buildingLayer;
-    
-    [Tooltip("Если курсор сместился больше чем на это кол-во пикселей, клик отменяется (считаем это драгом камеры)")]
+    [SerializeField] private LayerMask interactableLayer; // Переименовали для ясности (было buildingLayer)
     [SerializeField] private float dragThreshold = 40f; 
 
     private Camera _mainCamera;
     
-    // Храним здание, на которое нажали в начале
-    private BuildingController _pressedBuilding;
-    // Храним позицию нажатия, чтобы считать дистанцию свайпа
+    // Теперь храним интерфейс, а не конкретный класс здания
+    private IInteractable _pressedObject;
     private Vector3 _pointerDownPosition;
 
     private void Awake()
@@ -27,56 +24,47 @@ public class InteractionController : MonoBehaviour
 
     private void HandleInput()
     {
-        // 1. НАЖАТИЕ (Mouse Down)
-        // Здесь мы ТОЛЬКО запоминаем, на что нажали. Никаких действий не совершаем.
+        // 1. НАЖАТИЕ
         if (Input.GetMouseButtonDown(0))
         {
-            // Если нажали на UI (кнопку постройки и т.д.), игнорируем 3D мир
             if (IsPointerOverUI()) 
             {
-                _pressedBuilding = null;
+                _pressedObject = null;
                 return;
             }
 
-            _pressedBuilding = GetBuildingUnderCursor();
+            _pressedObject = GetInteractableUnderCursor();
             _pointerDownPosition = Input.mousePosition;
         }
 
-        // 2. ОТПУСКАНИЕ (Mouse Up)
-        // Все проверки и действия происходят только здесь.
+        // 2. ОТПУСКАНИЕ
         if (Input.GetMouseButtonUp(0))
         {
-            // Если в начале мы нажали в пустоту или на UI - выходим
-            if (_pressedBuilding == null) return;
+            if (_pressedObject == null) return;
 
-            // А. Проверка на свайп камеры
-            // Если курсор уехал далеко от места нажатия - это было перемещение камеры, а не клик.
             float distance = Vector3.Distance(_pointerDownPosition, Input.mousePosition);
             if (distance > dragThreshold)
             {
-                _pressedBuilding = null;
+                _pressedObject = null;
                 return;
             }
 
-            // Б. Проверка, что мы отпустили курсор НАД ТЕМ ЖЕ зданием
-            BuildingController releasedBuilding = GetBuildingUnderCursor();
+            IInteractable releasedObject = GetInteractableUnderCursor();
 
-            if (releasedBuilding != null && releasedBuilding == _pressedBuilding)
+            // Сравниваем объекты. Если это один и тот же объект (и он не null) -> Interact
+            // (Сравниваем как объекты Unity, так как интерфейсы напрямую сравнивать опасно, если объект уничтожен)
+            if (releasedObject != null && releasedObject == _pressedObject)
             {
-                // Дополнительная проверка, не перекрыт ли курсор UI сейчас (на всякий случай)
                 if (!IsPointerOverUI())
                 {
-                    // ВЫЗЫВАЕМ ДЕЙСТВИЕ (Стройка или Окно улучшений)
-                    _pressedBuilding.Interact();
+                    _pressedObject.Interact();
                 }
             }
 
-            // Сбрасываем ссылку
-            _pressedBuilding = null;
+            _pressedObject = null;
         }
     }
 
-    // Универсальная проверка UI (ПК + Мобайл)
     private bool IsPointerOverUI()
     {
         if (EventSystem.current.IsPointerOverGameObject()) return true;
@@ -91,14 +79,15 @@ public class InteractionController : MonoBehaviour
         return false;
     }
 
-    private BuildingController GetBuildingUnderCursor()
+    // Универсальный метод поиска
+    private IInteractable GetInteractableUnderCursor()
     {
         Ray ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit hit, 100f, buildingLayer))
+        if (Physics.Raycast(ray, out RaycastHit hit, 100f, interactableLayer))
         {
-            if (hit.collider.TryGetComponent(out BuildingController building))
+            if (hit.collider.TryGetComponent(out IInteractable interactable))
             {
-                return building;
+                return interactable;
             }
         }
         return null;

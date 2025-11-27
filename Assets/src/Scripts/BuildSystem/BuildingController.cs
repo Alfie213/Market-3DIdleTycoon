@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BuildingController : MonoBehaviour
+public class BuildingController : MonoBehaviour, IInteractable
 {
     [SerializeField] private BuildingData buildingData;
     

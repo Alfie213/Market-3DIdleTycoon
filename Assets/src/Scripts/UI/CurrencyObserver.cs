@@ -5,7 +5,7 @@ public class CurrencyObserver : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI[] currencyTexts;
     
-    private UIPulseAnimation[] _pulseAnimations;
+    private PulseAnimation[] _pulseAnimations;
 
     // Инициализацию ссылок делаем в Awake, чтобы они были готовы до включения событий
     private void Awake()
@@ -13,13 +13,13 @@ public class CurrencyObserver : MonoBehaviour
         // Защита от дурака, если забыли назначить тексты в инспекторе
         if (currencyTexts == null) return;
 
-        _pulseAnimations = new UIPulseAnimation[currencyTexts.Length];
+        _pulseAnimations = new PulseAnimation[currencyTexts.Length];
 
         for (int i = 0; i < currencyTexts.Length; i++)
         {
             if (currencyTexts[i] != null)
             {
-                _pulseAnimations[i] = currencyTexts[i].GetComponent<UIPulseAnimation>();
+                _pulseAnimations[i] = currencyTexts[i].GetComponent<PulseAnimation>();
             }
         }
     }

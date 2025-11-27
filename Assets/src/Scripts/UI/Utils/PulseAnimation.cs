@@ -1,11 +1,12 @@
 using System.Collections;
 using UnityEngine;
 
-public class UIPulseAnimation : MonoBehaviour
+// Класс переименован, так как подходит и для UI, и для 3D объектов
+public class PulseAnimation : MonoBehaviour
 {
     [Header("Settings")]
-    [SerializeField] private float pulseScale = 1.2f; // Насколько увеличивать (1.2 = на 20%)
-    [SerializeField] private float duration = 0.2f;   // Как быстро (в секундах)
+    [SerializeField] private float pulseScale = 1.1f; // Для 3D лучше ставить поменьше (например 1.1)
+    [SerializeField] private float duration = 0.15f;
 
     private Vector3 _originalScale;
     private Coroutine _animationCoroutine;
@@ -17,7 +18,6 @@ public class UIPulseAnimation : MonoBehaviour
 
     public void Play()
     {
-        // Если объект выключен, корутина не запустится, поэтому включаем (на всякий случай)
         if (!gameObject.activeInHierarchy) return;
 
         if (_animationCoroutine != null) StopCoroutine(_animationCoroutine);
@@ -29,7 +29,7 @@ public class UIPulseAnimation : MonoBehaviour
         float timer = 0f;
         Vector3 targetScale = _originalScale * pulseScale;
 
-        // 1. Увеличение (Zoom In)
+        // Zoom In
         while (timer < duration / 2)
         {
             timer += Time.deltaTime;
@@ -38,7 +38,7 @@ public class UIPulseAnimation : MonoBehaviour
             yield return null;
         }
 
-        // 2. Уменьшение (Zoom Out)
+        // Zoom Out
         timer = 0f;
         while (timer < duration / 2)
         {
@@ -48,14 +48,12 @@ public class UIPulseAnimation : MonoBehaviour
             yield return null;
         }
 
-        // Гарантируем возврат к исходному размеру
         transform.localScale = _originalScale;
         _animationCoroutine = null;
     }
 
     private void OnDisable()
     {
-        // Сброс при выключении объекта, чтобы он не остался увеличенным
         transform.localScale = _originalScale;
     }
 }
