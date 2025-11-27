@@ -17,7 +17,7 @@ MonoBehaviour:
   profitPerCustomer: 0
   baseProcessingTime: 2
   baseWorkers: 1
-  maxPossibleWorkers: 4
-  maxQueueCapacity: 1
-  speedUpgradeCost: 100
-  workerUpgradeCost: 250
+  maxPossibleWorkers: 2
+  maxQueueCapacity: 5
+  speedUpgradeCost: 150
+  workerUpgradeCost: 400
