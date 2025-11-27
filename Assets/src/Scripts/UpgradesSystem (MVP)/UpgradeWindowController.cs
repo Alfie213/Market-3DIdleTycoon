@@ -5,10 +5,13 @@ public class UpgradeWindowController : MonoBehaviour
     [SerializeField] private UpgradeWindowView view;
     private BuildingController _currentBuilding;
 
-    // ... (OnEnable/Disable/OpenWindow/CloseWindow такие же как раньше) ...
     private void OnEnable()
     {
         GameEvents.OnUpgradeWindowRequested += OpenWindow;
+        
+        // Подписываемся на изменение валюты, чтобы обновлять кнопки "на лету"
+        GameEvents.OnCurrencyChanged += HandleCurrencyChanged;
+        
         view.OnCloseClicked += CloseWindow;
         view.OnSpeedUpgradeClicked += TryUpgradeSpeed;
         view.OnWorkersUpgradeClicked += TryUpgradeWorkers;
@@ -17,10 +20,28 @@ public class UpgradeWindowController : MonoBehaviour
     private void OnDisable()
     {
         GameEvents.OnUpgradeWindowRequested -= OpenWindow;
+        
+        // Отписываемся
+        GameEvents.OnCurrencyChanged -= HandleCurrencyChanged;
+        
         view.OnCloseClicked -= CloseWindow;
         view.OnSpeedUpgradeClicked -= TryUpgradeSpeed;
         view.OnWorkersUpgradeClicked -= TryUpgradeWorkers;
-        if (_currentBuilding != null) _currentBuilding.OnStatsChanged -= RefreshUI;
+        
+        if (_currentBuilding != null)
+        {
+            _currentBuilding.OnStatsChanged -= RefreshUI;
+        }
+    }
+
+    // Обработчик изменения денег просто вызывает перерисовку UI
+    private void HandleCurrencyChanged(int newAmount)
+    {
+        // Обновляем UI только если окно открыто
+        if (_currentBuilding != null)
+        {
+            RefreshUI();
+        }
     }
 
     private void OpenWindow(BuildingController building)
@@ -54,27 +75,33 @@ public class UpgradeWindowController : MonoBehaviour
             _currentBuilding.MaxPossibleWorkers
         );
 
-        // Проверяем оба лимита
+        // Получаем текущие данные
+        int currentMoney = CurrencyController.Instance.CurrentCurrency;
+        int speedCost = _currentBuilding.Data.SpeedUpgradeCost;
+        int workerCost = _currentBuilding.Data.WorkerUpgradeCost;
+
         bool isMaxWorkers = _currentBuilding.CurrentUnlockedWorkers >= _currentBuilding.MaxPossibleWorkers;
-        
-        // Новая проверка для скорости
         bool isMaxSpeed = _currentBuilding.CurrentSpeedLevel >= _currentBuilding.Data.MaxSpeedUpgrades;
         
-        // Передаем оба флага во View
+        // Проверяем, хватает ли денег
+        bool canAffordSpeed = currentMoney >= speedCost;
+        bool canAffordWorkers = currentMoney >= workerCost;
+        
+        // Передаем все данные во View
         view.UpdateCosts(
-            _currentBuilding.Data.SpeedUpgradeCost,
-            _currentBuilding.Data.WorkerUpgradeCost,
-            isMaxSpeed, // <-- Новое
-            isMaxWorkers
+            speedCost,
+            workerCost,
+            isMaxSpeed,
+            isMaxWorkers,
+            canAffordSpeed,    // <-- Новое
+            canAffordWorkers   // <-- Новое
         );
     }
-    
-    // ... (TryUpgradeSpeed/Workers такие же как раньше) ...
+
     private void TryUpgradeSpeed()
     {
         if (_currentBuilding == null) return;
         
-        // Доп. проверка (на всякий случай, хотя кнопка будет выключена)
         if (_currentBuilding.CurrentSpeedLevel >= _currentBuilding.Data.MaxSpeedUpgrades) return;
 
         if (CurrencyController.Instance.TrySpendCurrency(_currentBuilding.Data.SpeedUpgradeCost))
@@ -86,6 +113,7 @@ public class UpgradeWindowController : MonoBehaviour
     private void TryUpgradeWorkers()
     {
         if (_currentBuilding == null) return;
+        
         if (CurrencyController.Instance.TrySpendCurrency(_currentBuilding.Data.WorkerUpgradeCost))
         {
             _currentBuilding.UpgradeWorkers();

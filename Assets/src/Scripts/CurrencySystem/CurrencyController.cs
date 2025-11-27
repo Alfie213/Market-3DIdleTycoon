@@ -8,6 +8,10 @@ public class CurrencyController : MonoBehaviour
     
     private int _currencyCount;
 
+    // --- ДОБАВЛЕНО ---
+    public int CurrentCurrency => _currencyCount;
+    // -----------------
+
     private void Awake()
     {
         if (Instance == null) Instance = this;

@@ -56,9 +56,9 @@ public class UpgradeWindowView : MonoBehaviour
         workersText.text = $"Workers: {unlockedWorkers}/{maxPossibleWorkers}";
     }
 
-    public void UpdateCosts(int speedCost, int workerCost, bool maxSpeedReached, bool maxWorkersReached)
+    public void UpdateCosts(int speedCost, int workerCost, bool maxSpeedReached, bool maxWorkersReached, bool canAffordSpeed, bool canAffordWorkers)
     {
-        // ЛОГИКА ДЛЯ СКОРОСТИ
+        // 1. СКОРОСТЬ
         if (maxSpeedReached)
         {
             speedCostText.text = "MAX";
@@ -67,10 +67,12 @@ public class UpgradeWindowView : MonoBehaviour
         else
         {
             speedCostText.text = $"{speedCost}$";
-            speedUpgradeButton.interactable = true;
+            // Включаем кнопку только если хватает денег. 
+            // Можно еще покрасить текст в красный, если !canAffordSpeed, но пока просто Interactable
+            speedUpgradeButton.interactable = canAffordSpeed;
         }
 
-        // ЛОГИКА ДЛЯ РАБОТНИКОВ (Старая)
+        // 2. РАБОТНИКИ
         if (maxWorkersReached)
         {
             workersCostText.text = "MAX";
@@ -79,7 +81,7 @@ public class UpgradeWindowView : MonoBehaviour
         else
         {
             workersCostText.text = $"{workerCost}$";
-            workersUpgradeButton.interactable = true;
+            workersUpgradeButton.interactable = canAffordWorkers;
         }
     }
 }
