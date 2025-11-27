@@ -4,13 +4,22 @@ using UnityEngine;
 
 public class TutorialView : MonoBehaviour
 {
-    [SerializeField] private GameObject contentRoot; // Панель с фоном
+    [SerializeField] private GameObject contentRoot;
     [SerializeField] private TextMeshProUGUI tutorialText;
     
+    // Ссылка на анимацию (добавь скрипт на contentRoot или на саму панель)
+    [SerializeField] private UIPulseAnimation pulseAnimation;
+
     public void Show(string text)
     {
         contentRoot.SetActive(true);
         tutorialText.text = text;
+
+        // Запускаем пульсацию
+        if (pulseAnimation != null)
+        {
+            pulseAnimation.Play();
+        }
     }
 
     public void Hide()
@@ -18,7 +27,6 @@ public class TutorialView : MonoBehaviour
         contentRoot.SetActive(false);
     }
     
-    // Вспомогательный метод для автоматического скрытия через время
     public void ShowAndHideDelayed(string text, float delay)
     {
         Show(text);

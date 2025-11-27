@@ -3,12 +3,30 @@ using UnityEngine;
 
 public class CurrencyObserver : MonoBehaviour
 {
-    // Массив для привязки нескольких текстовых полей (HUD, Магазин, Меню паузы и т.д.)
     [SerializeField] private TextMeshProUGUI[] currencyTexts;
+    
+    private UIPulseAnimation[] _pulseAnimations;
+
+    // Инициализацию ссылок делаем в Awake, чтобы они были готовы до включения событий
+    private void Awake()
+    {
+        // Защита от дурака, если забыли назначить тексты в инспекторе
+        if (currencyTexts == null) return;
+
+        _pulseAnimations = new UIPulseAnimation[currencyTexts.Length];
+
+        for (int i = 0; i < currencyTexts.Length; i++)
+        {
+            if (currencyTexts[i] != null)
+            {
+                _pulseAnimations[i] = currencyTexts[i].GetComponent<UIPulseAnimation>();
+            }
+        }
+    }
 
     private void Start()
     {
-        // При старте сразу показываем актуальное значение, если контроллер уже существует
+        // Обновляем визуальное состояние при старте
         if (CurrencyController.Instance != null)
         {
             UpdateVisuals(CurrencyController.Instance.CurrentCurrency);
@@ -17,7 +35,6 @@ public class CurrencyObserver : MonoBehaviour
 
     private void OnEnable()
     {
-        // Подписываемся на глобальное событие
         GameEvents.OnCurrencyChanged += UpdateVisuals;
     }
 
@@ -28,13 +45,20 @@ public class CurrencyObserver : MonoBehaviour
 
     private void UpdateVisuals(int amount)
     {
-        // Проходимся по всем привязанным текстам
-        foreach (var textMesh in currencyTexts)
+        if (currencyTexts == null) return;
+
+        for (int i = 0; i < currencyTexts.Length; i++)
         {
-            if (textMesh != null)
+            if (currencyTexts[i] != null)
             {
-                // Интерполяция строки: Значение + Знак доллара
-                textMesh.text = $"{amount}$";
+                currencyTexts[i].text = $"{amount}$";
+
+                // Добавляем проверку, инициализирован ли массив (на всякий случай)
+                // и есть ли анимация
+                if (_pulseAnimations != null && i < _pulseAnimations.Length && _pulseAnimations[i] != null)
+                {
+                    _pulseAnimations[i].Play();
+                }
             }
         }
     }
