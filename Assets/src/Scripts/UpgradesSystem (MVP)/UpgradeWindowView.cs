@@ -56,10 +56,21 @@ public class UpgradeWindowView : MonoBehaviour
         workersText.text = $"Workers: {unlockedWorkers}/{maxPossibleWorkers}";
     }
 
-    public void UpdateCosts(int speedCost, int workerCost, bool maxWorkersReached)
+    public void UpdateCosts(int speedCost, int workerCost, bool maxSpeedReached, bool maxWorkersReached)
     {
-        speedCostText.text = $"{speedCost}$";
-        
+        // ЛОГИКА ДЛЯ СКОРОСТИ
+        if (maxSpeedReached)
+        {
+            speedCostText.text = "MAX";
+            speedUpgradeButton.interactable = false;
+        }
+        else
+        {
+            speedCostText.text = $"{speedCost}$";
+            speedUpgradeButton.interactable = true;
+        }
+
+        // ЛОГИКА ДЛЯ РАБОТНИКОВ (Старая)
         if (maxWorkersReached)
         {
             workersCostText.text = "MAX";

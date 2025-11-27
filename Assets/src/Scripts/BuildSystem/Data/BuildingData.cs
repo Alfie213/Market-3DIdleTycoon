@@ -20,6 +20,10 @@ public class BuildingData : ScriptableObject
     [Header("Upgrade Costs")]
     [SerializeField] private int speedUpgradeCost = 100;
     [SerializeField] private int workerUpgradeCost = 250;
+    
+    [Header("Upgrade Limits")]
+    [Tooltip("Максимальное количество улучшений скорости")]
+    [SerializeField] private int maxSpeedUpgrades = 5;
 
     public string BuildingName => buildingName;
     public int BuildCost => buildCost;
@@ -30,4 +34,5 @@ public class BuildingData : ScriptableObject
     public int MaxQueueCapacity => maxQueueCapacity;
     public int SpeedUpgradeCost => speedUpgradeCost;
     public int WorkerUpgradeCost => workerUpgradeCost;
+    public int MaxSpeedUpgrades => maxSpeedUpgrades;
 }

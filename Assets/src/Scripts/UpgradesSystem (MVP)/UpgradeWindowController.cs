@@ -54,11 +54,17 @@ public class UpgradeWindowController : MonoBehaviour
             _currentBuilding.MaxPossibleWorkers
         );
 
+        // Проверяем оба лимита
         bool isMaxWorkers = _currentBuilding.CurrentUnlockedWorkers >= _currentBuilding.MaxPossibleWorkers;
         
+        // Новая проверка для скорости
+        bool isMaxSpeed = _currentBuilding.CurrentSpeedLevel >= _currentBuilding.Data.MaxSpeedUpgrades;
+        
+        // Передаем оба флага во View
         view.UpdateCosts(
             _currentBuilding.Data.SpeedUpgradeCost,
             _currentBuilding.Data.WorkerUpgradeCost,
+            isMaxSpeed, // <-- Новое
             isMaxWorkers
         );
     }
@@ -67,6 +73,10 @@ public class UpgradeWindowController : MonoBehaviour
     private void TryUpgradeSpeed()
     {
         if (_currentBuilding == null) return;
+        
+        // Доп. проверка (на всякий случай, хотя кнопка будет выключена)
+        if (_currentBuilding.CurrentSpeedLevel >= _currentBuilding.Data.MaxSpeedUpgrades) return;
+
         if (CurrencyController.Instance.TrySpendCurrency(_currentBuilding.Data.SpeedUpgradeCost))
         {
             _currentBuilding.UpgradeSpeed();

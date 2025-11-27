@@ -22,6 +22,10 @@ public class BuildingController : MonoBehaviour
     private bool _isBuilt = false;
     private int _currentUnlockedWorkers;
     private float _currentProcessingTime;
+    
+    private int _currentSpeedLevel = 0;
+    
+    public int CurrentSpeedLevel => _currentSpeedLevel;
 
     // Свойства...
     public BuildingData Data => buildingData;
@@ -119,6 +123,11 @@ public class BuildingController : MonoBehaviour
     // ... (Остальные методы: UpgradeSpeed, UpgradeWorkers, RefreshWorkerPoints и т.д. без изменений) ...
     public void UpgradeSpeed()
     {
+        // Проверка лимита
+        if (_currentSpeedLevel >= buildingData.MaxSpeedUpgrades) return;
+
+        _currentSpeedLevel++; // Увеличиваем уровень
+        
         _currentProcessingTime = Mathf.Max(0.1f, _currentProcessingTime * 0.9f);
         RefreshWorkerPoints();
         OnStatsChanged?.Invoke();
