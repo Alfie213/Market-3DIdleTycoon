@@ -9,14 +9,12 @@ public class SettingsUIController : MonoBehaviour
 
     private void Start()
     {
-        // Инициализация UI: ставим галочки в правильное положение при открытии
         if (AudioManager.Instance != null)
         {
             musicToggle.isOn = AudioManager.Instance.IsMusicEnabled;
             sfxToggle.isOn = AudioManager.Instance.IsSFXEnabled;
         }
 
-        // Подписка на изменения
         musicToggle.onValueChanged.AddListener(OnMusicToggled);
         sfxToggle.onValueChanged.AddListener(OnSFXToggled);
     }
