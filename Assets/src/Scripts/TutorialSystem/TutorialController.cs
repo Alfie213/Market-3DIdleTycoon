@@ -10,15 +10,14 @@ public class TutorialController : MonoBehaviour
     {
         BuildStalls = 0,
         WaitForCustomers = 1,
-        FirstSaleMade = 2,  // Начиная с этого шага можно открывать окно
+        FirstSaleMade = 2,
         UpgradeDone = 3,
         Completed = 4
     }
 
     private TutorialStep _currentStep = TutorialStep.BuildStalls;
 
-    // Публичное свойство: Разрешены ли улучшения?
-    // Разрешены, если мы дошли до шага FirstSaleMade ИЛИ закончили обучение.
+    public bool IsTutorialCompleted => _currentStep == TutorialStep.Completed;
     public bool IsUpgradesAllowed => _currentStep >= TutorialStep.FirstSaleMade;
 
     private void Awake()
@@ -29,13 +28,14 @@ public class TutorialController : MonoBehaviour
 
     private void Start()
     {
-        ShowMessage("Welcome! Buy the Cashier and the Meat Stall to open your market.");
+        // 0 = бесконечно (пока не выполнит задание)
+        ShowHint("Welcome! Buy the Cashier and the Meat Stall to open your market.", 0f);
     }
 
     private void OnEnable()
     {
         GameEvents.OnShopOpened += HandleShopOpened;
-        GameEvents.OnSaleCompleted += HandleSaleCompleted; 
+        GameEvents.OnSaleCompleted += HandleSaleCompleted;
         GameEvents.OnUpgradePurchased += HandleUpgradePurchased;
     }
 
@@ -46,12 +46,29 @@ public class TutorialController : MonoBehaviour
         GameEvents.OnUpgradePurchased -= HandleUpgradePurchased;
     }
 
+    // --- УНИВЕРСАЛЬНЫЙ МЕТОД ---
+    // Мы удалили ShowMessage и заменили его на ShowHint.
+    // duration: 0 - висит бесконечно, > 0 - исчезает через время.
+    public void ShowHint(string text, float duration = 0f)
+    {
+        if (duration > 0)
+        {
+            view.ShowAndHideDelayed(text, duration);
+        }
+        else
+        {
+            view.Show(text);
+        }
+    }
+    // ---------------------------
+
     private void HandleShopOpened()
     {
         if (_currentStep == TutorialStep.BuildStalls)
         {
             _currentStep = TutorialStep.WaitForCustomers;
-            ShowMessage("Great job! The shop is OPEN. Customers are coming...");
+            // Важная инструкция - висит бесконечно (0)
+            ShowHint("Great job! The shop is OPEN. Customers are coming...", 0f);
         }
     }
 
@@ -60,7 +77,8 @@ public class TutorialController : MonoBehaviour
         if (_currentStep == TutorialStep.WaitForCustomers)
         {
             _currentStep = TutorialStep.FirstSaleMade;
-            ShowMessage("First profit made! Tap on a building and BUY an upgrade to boost efficiency!");
+            // Важная инструкция - висит бесконечно (0)
+            ShowHint("First profit made! Tap on a building and BUY an upgrade to boost efficiency!", 0f);
         }
     }
 
@@ -75,11 +93,7 @@ public class TutorialController : MonoBehaviour
     private void FinishTutorial()
     {
         _currentStep = TutorialStep.Completed;
-        view.ShowAndHideDelayed("You are a professional businessman now! Keep expanding to succeed.", 6f);
-    }
-
-    private void ShowMessage(string text)
-    {
-        view.Show(text);
+        // Финальное сообщение - можно скрыть через 12 секунд
+        ShowHint("You are a professional businessman now! Remember: the more upgrades you buy, the more customers will come! Good luck!", 12f);
     }
 }

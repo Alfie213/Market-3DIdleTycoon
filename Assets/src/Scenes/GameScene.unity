@@ -21512,7 +21512,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1792068373}
   m_Father: {fileID: 497013528}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1400775799
@@ -26509,6 +26510,69 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1791265972}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1792068372
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1792068373}
+  - component: {fileID: 1792068374}
+  - component: {fileID: 1792068375}
+  m_Layer: 0
+  m_Name: InventorySystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1792068373
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1792068372}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1400775798}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1792068374
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1792068372}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bccf3af2355f4174094ce90bc7b4d25b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ticketRewardAmount: 250
+  dropChance: 0.05
+--- !u!114 &1792068375
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1792068372}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 722bab9b1f7331b48843eb871dcb789e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  contentRoot: {fileID: 0}
+  ticketButton: {fileID: 0}
+  countText: {fileID: 0}
+  pulseAnimation: {fileID: 0}
 --- !u!1001 &1793128227
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -28659,12 +28723,12 @@ PrefabInstance:
     - target: {fileID: 3447550026068113798, guid: de45f7c55f80d34479dbd90b5c869353,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0.5075073
+      value: 0.5074463
       objectReference: {fileID: 0}
     - target: {fileID: 3447550026068113798, guid: de45f7c55f80d34479dbd90b5c869353,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -1.6199951
+      value: -1.619873
       objectReference: {fileID: 0}
     - target: {fileID: 3447550026068113798, guid: de45f7c55f80d34479dbd90b5c869353,
         type: 3}
