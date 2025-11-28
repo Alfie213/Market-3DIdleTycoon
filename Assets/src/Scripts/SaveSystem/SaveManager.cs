@@ -46,6 +46,25 @@ public class SaveManager : MonoBehaviour
             StartCoroutine(LoadGameDelayed());
         }
     }
+    
+    public bool HasSaveData()
+    {
+        return PlayerPrefs.HasKey(SaveKey);
+    }
+    
+    public void DeleteSaveFile()
+    {
+        // Удаляем конкретный ключ сохранения
+        PlayerPrefs.DeleteKey(SaveKey);
+        
+        // Или PlayerPrefs.DeleteAll(); // Если хочешь удалить вообще всё
+        
+        PlayerPrefs.Save();
+        Debug.Log("Save file deleted.");
+        
+        // Опционально: перезагрузка игры после удаления
+        // UnityEngine.SceneManagement.SceneManager.LoadScene("StartupScene");
+    }
 
     private IEnumerator LoadGameDelayed()
     {

@@ -381,7 +381,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b08720cd9c8e41a4096162fc066eb87e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startButton: {fileID: 1816568749}
+  startGameButton: {fileID: 1816568749}
+  loadGameButton: {fileID: 501300944}
+  loadGameButtonText: {fileID: 1979182426}
 --- !u!4 &605385025
 Transform:
   m_ObjectHideFlags: 0
@@ -1021,7 +1023,7 @@ GameObject:
   - component: {fileID: 1816568749}
   - component: {fileID: 1816568752}
   m_Layer: 5
-  m_Name: StartGameButton
+  m_Name: StartNewGameButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1405,7 +1407,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Start Game
+  m_text: Start new Game
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 7ef1744a1639dcc4f8881fa53a67c586, type: 2}
   m_sharedMaterial: {fileID: 5324852707644431158, guid: 7ef1744a1639dcc4f8881fa53a67c586,

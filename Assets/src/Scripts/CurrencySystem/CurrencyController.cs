@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class CurrencyController : MonoBehaviour
+public class CurrencyController : MonoBehaviour, ISaveable
 {
     public static CurrencyController Instance { get; private set; }
     
@@ -22,6 +22,29 @@ public class CurrencyController : MonoBehaviour
 
     private void Start()
     {
+        SaveManager.Instance.RegisterSaveable(this); // Регистрируемся
+        
+        // ВАЖНО: Мы не вызываем LoadGame() здесь.
+        // SaveManager сам вызовет LoadFromSaveData, когда будет нужно.
+        // Но для начального состояния валюты мы отправляем ивент.
+        GameEvents.InvokeCurrencyChanged(_currencyCount); 
+    }
+    
+    private void OnDestroy()
+    {
+        if (SaveManager.Instance != null) SaveManager.Instance.UnregisterSaveable(this);
+    }
+
+    // --- РЕАЛИЗАЦИЯ ИНТЕРФЕЙСА ---
+
+    public void PopulateSaveData(GameSaveData saveData)
+    {
+        saveData.money = _currencyCount;
+    }
+
+    public void LoadFromSaveData(GameSaveData saveData)
+    {
+        _currencyCount = saveData.money;
         GameEvents.InvokeCurrencyChanged(_currencyCount);
     }
 

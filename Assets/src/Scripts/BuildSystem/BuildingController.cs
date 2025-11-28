@@ -70,10 +70,17 @@ public class BuildingController : MonoBehaviour, IInteractable, ISaveable
 
         SaveManager.Instance.RegisterSaveable(this);
 
-        if (priceDisplay != null) priceDisplay.SetPrice(buildingData.BuildCost);
-        priceDisplay.OnBuyClicked += TryConstruct;
+        if (priceDisplay != null)
+        {
+            priceDisplay.SetPrice(buildingData.BuildCost);
+            priceDisplay.OnBuyClicked += TryConstruct;
+        }
         
-        // Важно: RefreshWorkerPoints вызовется после загрузки данных
+        // --- ДОБАВИТЬ ЭТУ СТРОКУ ---
+        // Принудительно обновляем состояние при старте.
+        // Если здание не построено (_isBuilt = false), этот метод скроет всех работников.
+        RefreshWorkerPoints(); 
+        // ---------------------------
     }
 
     private void OnDestroy()
@@ -196,17 +203,19 @@ public class BuildingController : MonoBehaviour, IInteractable, ISaveable
 
     private void RefreshWorkerPoints()
     {
+        // 1. Если здание еще не куплено (стройка) - ВЫКЛЮЧАЕМ ВСЕХ
         if (!_isBuilt)
         {
             foreach (var wp in workerPoints) wp.SetUnlocked(false);
             return;
         }
 
+        // 2. Если построено - включаем только тех, кто куплен (UnlockedWorkers)
         for (int i = 0; i < workerPoints.Count; i++)
         {
             bool shouldBeActive = i < _currentUnlockedWorkers;
-            workerPoints[i].Initialize(_currentProcessingTime, buildingData.ProfitPerCustomer);
-            workerPoints[i].SetUnlocked(shouldBeActive);
+            // SetUnlocked(false) скроет модель и бар, даже если в редакторе они были включены
+            workerPoints[i].SetUnlocked(shouldBeActive); 
         }
     }
 
