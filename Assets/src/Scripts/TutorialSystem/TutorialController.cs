@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class TutorialController : MonoBehaviour
+public class TutorialController : MonoBehaviour, ISaveable
 {
     public static TutorialController Instance { get; private set; }
 
@@ -33,7 +33,13 @@ public class TutorialController : MonoBehaviour
 
     private void Start()
     {
-        ShowHint("Welcome! Buy the Cashier and the Meat Stall to open your market.", 0f);
+        SaveManager.Instance.RegisterSaveable(this);
+        
+        // Если это новая игра (шаг 0) - показываем приветствие
+        if (_currentStep == TutorialStep.BuildStalls)
+        {
+            ShowHint("Welcome! Buy the Cashier and the Meat Stall to open your market.", 0f);
+        }
     }
 
     private void OnEnable()
@@ -48,6 +54,32 @@ public class TutorialController : MonoBehaviour
         GameEvents.OnShopOpened -= HandleShopOpened;
         GameEvents.OnSaleCompleted -= HandleSaleCompleted;
         GameEvents.OnUpgradePurchased -= HandleUpgradePurchased;
+    }
+    
+    private void OnDestroy()
+    {
+        if (SaveManager.Instance != null) SaveManager.Instance.UnregisterSaveable(this);
+    }
+    
+    public void PopulateSaveData(GameSaveData saveData)
+    {
+        // Кастим Enum в int
+        saveData.tutorialStepIndex = (int)_currentStep;
+        saveData.isTutorialInventoryReady = IsReadyForInventory;
+    }
+
+    public void LoadFromSaveData(GameSaveData saveData)
+    {
+        _currentStep = (TutorialStep)saveData.tutorialStepIndex;
+        IsReadyForInventory = saveData.isTutorialInventoryReady;
+        
+        // Если загрузились и туториал не пройден - нужно восстановить подсказку
+        // Для простоты можно просто скрыть текущую, игрок поймет по контексту
+        // Или можно добавить switch case для восстановления текста
+        if (IsTutorialCompleted)
+        {
+            view.Hide();
+        }
     }
 
     public void ShowHint(string text, float duration = 0f)

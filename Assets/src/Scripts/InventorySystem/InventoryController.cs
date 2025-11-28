@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class InventoryController : MonoBehaviour
+public class InventoryController : MonoBehaviour, ISaveable
 {
     public static InventoryController Instance { get; private set; }
 
@@ -21,6 +21,13 @@ public class InventoryController : MonoBehaviour
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
     }
+    
+    private void Start()
+    {
+        SaveManager.Instance.RegisterSaveable(this);
+        // Обновляем UI после регистрации, если загрузка произошла
+        GameEvents.InvokeTicketsChanged(_ticketsCount);
+    }
 
     private void OnEnable()
     {
@@ -32,6 +39,27 @@ public class InventoryController : MonoBehaviour
         GameEvents.OnSaleCompleted -= HandleSaleCompleted;
     }
 
+    private void OnDestroy()
+    {
+        if (SaveManager.Instance != null) SaveManager.Instance.UnregisterSaveable(this);
+    }
+    
+    public void PopulateSaveData(GameSaveData saveData)
+    {
+        saveData.tickets = _ticketsCount;
+        saveData.isFirstTicketDropped = _firstTicketDropped;
+        saveData.isFirstTicketUsed = _firstTicketUsed;
+    }
+
+    public void LoadFromSaveData(GameSaveData saveData)
+    {
+        _ticketsCount = saveData.tickets;
+        _firstTicketDropped = saveData.isFirstTicketDropped;
+        _firstTicketUsed = saveData.isFirstTicketUsed;
+        
+        GameEvents.InvokeTicketsChanged(_ticketsCount);
+    }
+    
     private void HandleSaleCompleted()
     {
         // --- ИЗМЕНЕНИЕ ЗДЕСЬ ---

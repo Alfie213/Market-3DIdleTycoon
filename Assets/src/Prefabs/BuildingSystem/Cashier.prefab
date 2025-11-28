@@ -194,6 +194,7 @@ MonoBehaviour:
   workerPoints:
   - {fileID: 5529171034002574845}
   - {fileID: 9085918896295267892}
+  buildingID: cashier
 --- !u!65 &7972372397946212660
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -586,6 +587,16 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 4833328602358482840}
     m_Modifications:
+    - target: {fileID: 2164575555317821154, guid: bf4097c5ee3f5a440bc73b891c4f9633,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2164575555317821154, guid: bf4097c5ee3f5a440bc73b891c4f9633,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5187069449486641429, guid: bf4097c5ee3f5a440bc73b891c4f9633,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -1169,6 +1180,16 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 4833328602358482840}
     m_Modifications:
+    - target: {fileID: 2164575555317821154, guid: bf4097c5ee3f5a440bc73b891c4f9633,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2164575555317821154, guid: bf4097c5ee3f5a440bc73b891c4f9633,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5187069449486641429, guid: bf4097c5ee3f5a440bc73b891c4f9633,
         type: 3}
       propertyPath: m_LocalPosition.x

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BuildingController : MonoBehaviour, IInteractable
+public class BuildingController : MonoBehaviour, IInteractable, ISaveable
 {
     [SerializeField] private BuildingData buildingData;
     
@@ -16,6 +16,10 @@ public class BuildingController : MonoBehaviour, IInteractable
     
     [Header("Workers")]
     [SerializeField] private List<WorkerPoint> workerPoints; 
+    
+    [Header("Save System")]
+    [Tooltip("Уникальный ID для сохранения. Должен быть разным у всех зданий! Например: MeatStall, Cashier")]
+    [SerializeField] private string buildingID; 
 
     public event Action OnStatsChanged;
 
@@ -59,22 +63,67 @@ public class BuildingController : MonoBehaviour, IInteractable
 
     private void Start()
     {
-        if (priceDisplay != null)
+        if (string.IsNullOrEmpty(buildingID))
         {
-            priceDisplay.SetPrice(buildingData.BuildCost);
-            // ПОДПИСКА НА КНОПКУ
-            priceDisplay.OnBuyClicked += TryConstruct;
+            Debug.LogError($"Building {gameObject.name} has no ID! Saving will fail.");
         }
 
-        RefreshWorkerPoints();
+        SaveManager.Instance.RegisterSaveable(this);
+
+        if (priceDisplay != null) priceDisplay.SetPrice(buildingData.BuildCost);
+        priceDisplay.OnBuyClicked += TryConstruct;
+        
+        // Важно: RefreshWorkerPoints вызовется после загрузки данных
     }
 
     private void OnDestroy()
     {
-        // ОТПИСКА (Хороший тон, чтобы избежать утечек памяти)
-        if (priceDisplay != null)
+        if (priceDisplay != null) priceDisplay.OnBuyClicked -= TryConstruct;
+        if (SaveManager.Instance != null) SaveManager.Instance.UnregisterSaveable(this);
+    }
+    
+    public void PopulateSaveData(GameSaveData saveData)
+    {
+        // Ищем, есть ли уже запись про это здание (чтобы перезаписать)
+        BuildingSaveData data = saveData.buildings.Find(b => b.id == buildingID);
+        
+        if (data == null)
         {
-            priceDisplay.OnBuyClicked -= TryConstruct;
+            data = new BuildingSaveData();
+            data.id = buildingID;
+            saveData.buildings.Add(data);
+        }
+
+        data.isBuilt = _isBuilt;
+        data.speedLevel = _currentSpeedLevel;
+        data.unlockedWorkers = _currentUnlockedWorkers;
+    }
+
+    public void LoadFromSaveData(GameSaveData saveData)
+    {
+        // Ищем свои данные по ID
+        BuildingSaveData data = saveData.buildings.Find(b => b.id == buildingID);
+
+        if (data != null)
+        {
+            _isBuilt = data.isBuilt;
+            _currentSpeedLevel = data.speedLevel;
+            _currentUnlockedWorkers = data.unlockedWorkers;
+            
+            // Восстанавливаем Processing Time на основе уровня скорости
+            // Формула должна совпадать с UpgradeSpeed: Base * 0.9 ^ Level
+            _currentProcessingTime = buildingData.BaseProcessingTime * Mathf.Pow(0.9f, _currentSpeedLevel);
+            // Мин. порог
+            _currentProcessingTime = Mathf.Max(0.1f, _currentProcessingTime);
+
+            UpdateVisuals();
+            RefreshWorkerPoints();
+            
+            // Если здание построено при загрузке - нужно сообщить ShopController'у
+            if (_isBuilt)
+            {
+                GameEvents.InvokeBuildingConstructed(this);
+            }
         }
     }
 

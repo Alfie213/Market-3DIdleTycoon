@@ -154,6 +154,7 @@ MonoBehaviour:
   workerPoints:
   - {fileID: 7940453300025824867}
   - {fileID: 4616788523319022300}
+  buildingID: meat_stall
 --- !u!65 &6355296384853821710
 BoxCollider:
   m_ObjectHideFlags: 0
