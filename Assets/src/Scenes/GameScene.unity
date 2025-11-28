@@ -31361,7 +31361,7 @@ MonoBehaviour:
   pauseWindowRoot: {fileID: 206357201}
   blackoutObject: {fileID: 283032444}
   resumeButton: {fileID: 1460330647}
-  exitButton: {fileID: 1460330647}
+  exitButton: {fileID: 2011103846}
   musicToggle: {fileID: 922526843}
   sfxToggle: {fileID: 906900455}
 --- !u!1001 &1991407012
