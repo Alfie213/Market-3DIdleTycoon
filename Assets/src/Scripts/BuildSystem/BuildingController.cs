@@ -203,19 +203,24 @@ public class BuildingController : MonoBehaviour, IInteractable, ISaveable
 
     private void RefreshWorkerPoints()
     {
-        // 1. Если здание еще не куплено (стройка) - ВЫКЛЮЧАЕМ ВСЕХ
+        // 1. Если здание еще не построено - выключаем всех
         if (!_isBuilt)
         {
             foreach (var wp in workerPoints) wp.SetUnlocked(false);
             return;
         }
 
-        // 2. Если построено - включаем только тех, кто куплен (UnlockedWorkers)
+        // 2. Если построено - обновляем данные и включаем нужное кол-во
         for (int i = 0; i < workerPoints.Count; i++)
         {
             bool shouldBeActive = i < _currentUnlockedWorkers;
-            // SetUnlocked(false) скроет модель и бар, даже если в редакторе они были включены
-            workerPoints[i].SetUnlocked(shouldBeActive); 
+            
+            // --- ВАЖНО: Передаем актуальную скорость и доход ---
+            // _currentProcessingTime меняется при апгрейдах, поэтому важно обновлять его здесь
+            workerPoints[i].Initialize(_currentProcessingTime, buildingData.ProfitPerCustomer);
+            // --------------------------------------------------
+
+            workerPoints[i].SetUnlocked(shouldBeActive);
         }
     }
 
