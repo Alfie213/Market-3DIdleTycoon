@@ -34,17 +34,19 @@ public class InventoryController : MonoBehaviour
 
     private void HandleSaleCompleted()
     {
-        // Логика работает только если основной туториал завершен
-        if (TutorialController.Instance == null || !TutorialController.Instance.IsTutorialCompleted) return;
+        // --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
+        // Было: if (!TutorialController.Instance.IsTutorialCompleted)
+        // Стало: Проверяем специальный флаг готовности
+        if (TutorialController.Instance == null || !TutorialController.Instance.IsReadyForInventory) return;
+        // -----------------------
 
         // 1. Сценарий первого билета
         if (!_firstTicketDropped)
         {
+            // ... (код выдачи первого билета без изменений) ...
             AddTicket(1);
             _firstTicketDropped = true;
-            
-            // Показываем подсказку
-            TutorialController.Instance.ShowHint("You found a GOLDEN TICKET! Tap on the ticket icon to claim your reward.");
+            TutorialController.Instance.ShowHint("You found a GOLDEN TICKET! Tap on the ticket icon to claim your reward.", 0f); // Этот хинт пусть висит пока не нажмут
             return;
         }
 
