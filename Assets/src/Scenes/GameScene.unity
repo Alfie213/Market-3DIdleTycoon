@@ -28103,8 +28103,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 064197af65368dc4b84701e13e3869f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minPositionLimit: {x: -5, y: -50}
-  maxPositionLimit: {x: 50, y: 5}
+  minPositionLimit: {x: 2.6, y: -45}
+  maxPositionLimit: {x: 37.3, y: -24.3}
   minZoom: 5
   maxZoom: 20
   zoomSensitivity: 2

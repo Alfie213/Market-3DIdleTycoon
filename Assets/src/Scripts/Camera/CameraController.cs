@@ -8,7 +8,9 @@ using UnityEngine.EventSystems;
 public class CameraController : MonoBehaviour
 {
     [Header("Limits")]
+    [Tooltip("Minimum X and Z coordinates the Camera Rig can move to.")]
     [SerializeField] private Vector2 minPositionLimit;
+    [Tooltip("Maximum X and Z coordinates the Camera Rig can move to.")]
     [SerializeField] private Vector2 maxPositionLimit;
 
     [Header("Zoom")]
@@ -142,4 +144,91 @@ public class CameraController : MonoBehaviour
     public void ZoomIn() => ModifyTargetZoom(-buttonZoomStep);
     public void ZoomOut() => ModifyTargetZoom(buttonZoomStep);
     private void ModifyTargetZoom(float amount) => _targetZoom = Mathf.Clamp(_targetZoom + amount, minZoom, maxZoom);
+
+    // ---------------------------------------------------------------------------
+    // GIZMOS IMPLEMENTATION
+    // ---------------------------------------------------------------------------
+#if UNITY_EDITOR
+    private void OnDrawGizmosSelected()
+    {
+        if (_camera == null) _camera = GetComponent<Camera>();
+        if (_camera == null) return;
+
+        // 1. Draw the CAMERA MOVEMENT LIMIT zone (Yellow)
+        Gizmos.color = Color.yellow;
+        float yPos = transform.position.y;
+        Vector3 centerMove = new Vector3((minPositionLimit.x + maxPositionLimit.x) / 2, yPos, (minPositionLimit.y + maxPositionLimit.y) / 2);
+        Vector3 sizeMove = new Vector3(maxPositionLimit.x - minPositionLimit.x, 1, maxPositionLimit.y - minPositionLimit.y);
+        Gizmos.DrawWireCube(centerMove, sizeMove);
+
+        // 2. Calculate the maximum possible VIEWABLE zone (Cyan)
+        // To do this, project the camera Frustum onto the ground at maximum zoom
+        
+        // Cache current settings to temporarily override them
+        float originalOrthoSize = _camera.orthographicSize;
+        float originalFOV = _camera.fieldOfView;
+        
+        // Override zoom to max to calculate limits
+        if (_camera.orthographic) _camera.orthographicSize = maxZoom;
+        else _camera.fieldOfView = maxZoom;
+
+        Bounds groundBounds = GetProjectedGroundBounds();
+
+        // Restore original zoom
+        if (_camera.orthographic) _camera.orthographicSize = originalOrthoSize;
+        else _camera.fieldOfView = originalFOV;
+
+        // groundBounds now contains the size of the visible area relative to the camera center.
+        // We need to add these dimensions to the movement limits.
+        
+        // Calculate visible area offset relative to camera position
+        Vector3 minOffset = groundBounds.min - transform.position;
+        Vector3 maxOffset = groundBounds.max - transform.position;
+
+        // Final world viewable coordinates
+        float worldMinX = minPositionLimit.x + minOffset.x;
+        float worldMaxX = maxPositionLimit.x + maxOffset.x;
+        float worldMinZ = minPositionLimit.y + minOffset.z; // Y in Vector2 is Z in World
+        float worldMaxZ = maxPositionLimit.y + maxOffset.z;
+
+        Gizmos.color = Color.cyan;
+        Vector3 centerView = new Vector3((worldMinX + worldMaxX) / 2, groundHeight, (worldMinZ + worldMaxZ) / 2);
+        Vector3 sizeView = new Vector3(Mathf.Abs(worldMaxX - worldMinX), 0.1f, Mathf.Abs(worldMaxZ - worldMinZ));
+        Gizmos.DrawWireCube(centerView, sizeView);
+    }
+
+    // Helper method to calculate screen projection onto the ground plane
+    private Bounds GetProjectedGroundBounds()
+    {
+        Bounds bounds = new Bounds();
+        Plane plane = new Plane(Vector3.up, new Vector3(0, groundHeight, 0));
+        
+        // 4 screen corners (Viewport Space)
+        Vector3[] corners = new Vector3[]
+        {
+            new Vector3(0, 0, 0), // Bottom Left
+            new Vector3(1, 0, 0), // Bottom Right
+            new Vector3(0, 1, 0), // Top Left
+            new Vector3(1, 1, 0)  // Top Right
+        };
+
+        bool firstPoint = true;
+
+        foreach (Vector3 p in corners)
+        {
+            Ray ray = _camera.ViewportPointToRay(p);
+            if (plane.Raycast(ray, out float distance))
+            {
+                Vector3 hitPoint = ray.GetPoint(distance);
+                if (firstPoint)
+                {
+                    bounds.center = hitPoint;
+                    firstPoint = false;
+                }
+                bounds.Encapsulate(hitPoint);
+            }
+        }
+        return bounds;
+    }
+#endif
 }
