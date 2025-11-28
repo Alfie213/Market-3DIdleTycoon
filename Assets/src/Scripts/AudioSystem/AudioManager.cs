@@ -65,9 +65,13 @@ public class AudioManager : MonoBehaviour
         _musicSource.Play();
     }
 
-    private void PlaySFX(AudioClip clip)
+    public void PlaySFX(AudioClip clip)
     {
         if (clip == null) return;
+        
+        // Добавляем вариативность питча (опционально), чтобы звук не был "роботизированным"
+        _sfxSource.pitch = Random.Range(0.95f, 1.05f); 
         _sfxSource.PlayOneShot(clip);
+        _sfxSource.pitch = 1f; // Возвращаем питч в норму
     }
 }
