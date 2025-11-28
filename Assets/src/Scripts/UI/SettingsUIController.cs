@@ -1,0 +1,39 @@
+using UnityEngine;
+using UnityEngine.UI;
+
+public class SettingsUIController : MonoBehaviour
+{
+    [Header("Toggles")]
+    [SerializeField] private Toggle musicToggle;
+    [SerializeField] private Toggle sfxToggle;
+
+    private void Start()
+    {
+        // Инициализация UI: ставим галочки в правильное положение при открытии
+        if (AudioManager.Instance != null)
+        {
+            musicToggle.isOn = AudioManager.Instance.IsMusicEnabled;
+            sfxToggle.isOn = AudioManager.Instance.IsSFXEnabled;
+        }
+
+        // Подписка на изменения
+        musicToggle.onValueChanged.AddListener(OnMusicToggled);
+        sfxToggle.onValueChanged.AddListener(OnSFXToggled);
+    }
+
+    private void OnMusicToggled(bool isEnabled)
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.SetMusicEnabled(isEnabled);
+        }
+    }
+
+    private void OnSFXToggled(bool isEnabled)
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.SetSFXEnabled(isEnabled);
+        }
+    }
+}
