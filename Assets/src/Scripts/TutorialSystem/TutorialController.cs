@@ -18,8 +18,6 @@ public class TutorialController : MonoBehaviour, ISaveable
 
     private TutorialStep _currentStep = TutorialStep.BuildStalls;
     
-    // Новое свойство: Готовы ли мы к выдаче билетов?
-    // По умолчанию false, станет true только спустя 5 секунд ПОСЛЕ исчезновения текста
     public bool IsReadyForInventory { get; private set; } = false;
 
     public bool IsTutorialCompleted => _currentStep == TutorialStep.Completed;
@@ -34,12 +32,18 @@ public class TutorialController : MonoBehaviour, ISaveable
     private void Start()
     {
         SaveManager.Instance.RegisterSaveable(this);
-        
-        // Если это новая игра (шаг 0) - показываем приветствие
+
+        // Показываем дефолтное сообщение при старте.
+        // Если сохранение загрузится, оно перезапишется в LoadFromSaveData.
         if (_currentStep == TutorialStep.BuildStalls)
         {
             ShowHint("Welcome! Buy the Cashier and the Meat Stall to open your market.", 0f);
         }
+    }
+
+    private void OnDestroy()
+    {
+        if (SaveManager.Instance != null) SaveManager.Instance.UnregisterSaveable(this);
     }
 
     private void OnEnable()
@@ -54,32 +58,6 @@ public class TutorialController : MonoBehaviour, ISaveable
         GameEvents.OnShopOpened -= HandleShopOpened;
         GameEvents.OnSaleCompleted -= HandleSaleCompleted;
         GameEvents.OnUpgradePurchased -= HandleUpgradePurchased;
-    }
-    
-    private void OnDestroy()
-    {
-        if (SaveManager.Instance != null) SaveManager.Instance.UnregisterSaveable(this);
-    }
-    
-    public void PopulateSaveData(GameSaveData saveData)
-    {
-        // Кастим Enum в int
-        saveData.tutorialStepIndex = (int)_currentStep;
-        saveData.isTutorialInventoryReady = IsReadyForInventory;
-    }
-
-    public void LoadFromSaveData(GameSaveData saveData)
-    {
-        _currentStep = (TutorialStep)saveData.tutorialStepIndex;
-        IsReadyForInventory = saveData.isTutorialInventoryReady;
-        
-        // Если загрузились и туториал не пройден - нужно восстановить подсказку
-        // Для простоты можно просто скрыть текущую, игрок поймет по контексту
-        // Или можно добавить switch case для восстановления текста
-        if (IsTutorialCompleted)
-        {
-            view.Hide();
-        }
     }
 
     public void ShowHint(string text, float duration = 0f)
@@ -118,10 +96,7 @@ public class TutorialController : MonoBehaviour, ISaveable
 
     private void FinishTutorial()
     {
-        // 1. Помечаем, что механика туториала пройдена (можно строить, играть)
         _currentStep = TutorialStep.Completed;
-        
-        // 2. Запускаем финальную последовательность таймеров
         StartCoroutine(FinalSequenceRoutine());
     }
 
@@ -130,17 +105,49 @@ public class TutorialController : MonoBehaviour, ISaveable
         float messageDuration = 12f;
         float delayAfterMessage = 5f;
 
-        // Показываем текст
         ShowHint("You are a professional businessman now! Remember: the more upgrades you buy, the more customers will come! Good luck!", messageDuration);
 
-        // Ждем пока текст висит (12 сек)
         yield return new WaitForSeconds(messageDuration);
-        
-        // Текст исчез (View скроет его сама по таймеру).
-        // Теперь ждем 5 секунд тишины.
         yield return new WaitForSeconds(delayAfterMessage);
 
-        // Включаем доступ к инвентарю
         IsReadyForInventory = true;
+    }
+
+    // --- ISaveable Реализация ---
+
+    public void PopulateSaveData(GameSaveData saveData)
+    {
+        saveData.tutorialStepIndex = (int)_currentStep;
+        saveData.isTutorialInventoryReady = IsReadyForInventory;
+    }
+
+    public void LoadFromSaveData(GameSaveData saveData)
+    {
+        _currentStep = (TutorialStep)saveData.tutorialStepIndex;
+        IsReadyForInventory = saveData.isTutorialInventoryReady;
+
+        // --- ИСПРАВЛЕНИЕ ЗДЕСЬ ---
+        // Восстанавливаем текст в зависимости от загруженного этапа
+        switch (_currentStep)
+        {
+            case TutorialStep.BuildStalls:
+                ShowHint("Welcome! Buy the Cashier and the Meat Stall to open your market.", 0f);
+                break;
+
+            case TutorialStep.WaitForCustomers:
+                ShowHint("Great job! The shop is OPEN. Customers are coming...", 0f);
+                break;
+
+            case TutorialStep.FirstSaleMade:
+                ShowHint("First profit made! Tap on a building and BUY an upgrade to boost efficiency!", 0f);
+                break;
+
+            case TutorialStep.UpgradeDone:
+            case TutorialStep.Completed:
+                // Если туториал пройден, скрываем окно (на случай, если оно было открыто дефолтным Start)
+                view.Hide();
+                break;
+        }
+        // -------------------------
     }
 }
