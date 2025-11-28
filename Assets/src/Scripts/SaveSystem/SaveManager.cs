@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+/// <summary>
+/// Singleton manager that handles JSON serialization/deserialization of game data.
+/// Persists data to PlayerPrefs.
+/// </summary>
 public class SaveManager : MonoBehaviour
 {
     public static SaveManager Instance { get; private set; }
@@ -22,19 +26,15 @@ public class SaveManager : MonoBehaviour
         }
     }
 
-    private void OnEnable()
-    {
-        SceneManager.sceneLoaded += OnSceneLoaded;
-    }
+    private void OnEnable() => SceneManager.sceneLoaded += OnSceneLoaded;
+    private void OnDisable() => SceneManager.sceneLoaded -= OnSceneLoaded;
 
-    private void OnDisable()
-    {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
-    }
-
+    /// <summary>
+    /// Automatically attempts to load the game when the Gameplay scene starts.
+    /// </summary>
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (scene.name == "GameScene") // Можно вынести в константу, но для сцен это допустимо
+        if (scene.name == "GameScene")
         {
             StartCoroutine(LoadGameDelayed());
         }
@@ -42,10 +42,15 @@ public class SaveManager : MonoBehaviour
 
     private IEnumerator LoadGameDelayed()
     {
+        // Wait one frame to ensure all Start() methods on the scene have run and registered their Saveables.
         yield return null; 
         LoadGame();
     }
 
+    /// <summary>
+    /// Registers an object to be included in the save/load process.
+    /// Should be called in Start().
+    /// </summary>
     public void RegisterSaveable(ISaveable saveable)
     {
         if (!_saveables.Contains(saveable)) _saveables.Add(saveable);
@@ -56,6 +61,9 @@ public class SaveManager : MonoBehaviour
         if (_saveables.Contains(saveable)) _saveables.Remove(saveable);
     }
 
+    /// <summary>
+    /// Collects data from all registered objects and writes it to PlayerPrefs.
+    /// </summary>
     public void SaveGame()
     {
         GameSaveData data = new GameSaveData();
@@ -71,6 +79,9 @@ public class SaveManager : MonoBehaviour
         Debug.Log("Game Saved");
     }
 
+    /// <summary>
+    /// Reads JSON from PlayerPrefs and distributes data to all registered objects.
+    /// </summary>
     public void LoadGame()
     {
         if (!HasSaveData()) return;
@@ -101,13 +112,7 @@ public class SaveManager : MonoBehaviour
         Debug.Log("Save file deleted");
     }
 
-    private void OnApplicationPause(bool pauseStatus)
-    {
-        if (pauseStatus) SaveGame();
-    }
-
-    private void OnApplicationQuit()
-    {
-        SaveGame();
-    }
+    // Auto-save on mobile minimize or PC quit
+    private void OnApplicationPause(bool pauseStatus) { if (pauseStatus) SaveGame(); }
+    private void OnApplicationQuit() { SaveGame(); }
 }

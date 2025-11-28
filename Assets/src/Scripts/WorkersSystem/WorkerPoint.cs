@@ -3,6 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Represents a single service point (e.g., one cashier or one stall worker).
+/// Handles its own customer queue and processing logic.
+/// </summary>
 public class WorkerPoint : MonoBehaviour
 {
     [Header("Visuals")]
@@ -10,9 +14,13 @@ public class WorkerPoint : MonoBehaviour
     [SerializeField] private WorldProgressBar progressBar;
     
     [Header("Configuration")]
+    [Tooltip("The position where the customer stands while being served. Z-Axis should point towards the queue line.")]
     [SerializeField] private Transform queueOrigin;
     [SerializeField] private float queueSpacing = 1.3f;
 
+    /// <summary>
+    /// Event fired when worker becomes busy/free or unlocked/locked.
+    /// </summary>
     public event Action OnStateChanged;
 
     private bool _isUnlocked = false;
@@ -58,6 +66,9 @@ public class WorkerPoint : MonoBehaviour
         StartCoroutine(ProcessRoutine());
     }
 
+    /// <summary>
+    /// Main logic loop: Wait for customer -> Process -> Reward -> Next.
+    /// </summary>
     private IEnumerator ProcessRoutine()
     {
         _isBusy = true;
@@ -66,6 +77,7 @@ public class WorkerPoint : MonoBehaviour
         Customer currentCustomer = _localQueue.Peek();
         currentCustomer.MoveToPosition(queueOrigin.position);
 
+        // 1. Wait for customer to physically arrive at the desk
         float arrivalTimeout = 10f; 
         while (!currentCustomer.IsAtTargetPosition() && arrivalTimeout > 0)
         {
@@ -73,6 +85,7 @@ public class WorkerPoint : MonoBehaviour
             yield return null;
         }
 
+        // 2. Processing (Progress Bar)
         float timer = 0f;
         while (timer < _processingTime)
         {
@@ -81,12 +94,14 @@ public class WorkerPoint : MonoBehaviour
             yield return null;
         }
 
+        // 3. Give Reward
         if (_profit > 0)
         {
             CurrencyController.Instance.AddCurrency(_profit);
             GameEvents.InvokeSaleCompleted();
         }
 
+        // 4. Cleanup and Next
         currentCustomer.CompleteCurrentTask();
         _localQueue.Dequeue();
 
@@ -98,11 +113,15 @@ public class WorkerPoint : MonoBehaviour
         TryProcessNext();
     }
 
+    /// <summary>
+    /// Re-calculates positions for all customers in the queue.
+    /// </summary>
     private void UpdateQueuePositions()
     {
         int index = 0;
         foreach (var customer in _localQueue)
         {
+            // Skip the first customer if they are currently being processed
             if (_isBusy && index == 0)
             {
                 index++;
@@ -112,33 +131,6 @@ public class WorkerPoint : MonoBehaviour
             Vector3 targetPos = queueOrigin.position - (queueOrigin.forward * index * queueSpacing);
             customer.MoveToPosition(targetPos);
             index++;
-        }
-    }
-
-    private void OnDrawGizmos()
-    {
-        if (queueOrigin == null) return;
-
-        Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(queueOrigin.position, 0.4f);
-
-        for (int i = 1; i < 6; i++)
-        {
-            Vector3 pos = queueOrigin.position - (queueOrigin.forward * i * queueSpacing);
-            
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(pos, 0.25f);
-            
-            Gizmos.color = Color.yellow;
-            if (i > 1)
-            {
-                Vector3 prevPos = queueOrigin.position - (queueOrigin.forward * (i - 1) * queueSpacing);
-                Gizmos.DrawLine(prevPos, pos);
-            }
-            else
-            {
-                Gizmos.DrawLine(queueOrigin.position, pos);
-            }
         }
     }
 }

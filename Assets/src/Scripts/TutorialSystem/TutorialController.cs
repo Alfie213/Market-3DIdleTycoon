@@ -1,6 +1,10 @@
 using System.Collections;
 using UnityEngine;
 
+/// <summary>
+/// Manages the game onboarding flow.
+/// Shows hints based on game events (Sales, Building, etc.).
+/// </summary>
 public class TutorialController : MonoBehaviour, ISaveable
 {
     public static TutorialController Instance { get; private set; }
@@ -18,8 +22,8 @@ public class TutorialController : MonoBehaviour, ISaveable
 
     private TutorialStep _currentStep = TutorialStep.BuildStalls;
     
+    // Flags for external systems
     public bool IsReadyForInventory { get; private set; } = false;
-
     public bool IsTutorialCompleted => _currentStep == TutorialStep.Completed;
     public bool IsUpgradesAllowed => _currentStep >= TutorialStep.FirstSaleMade;
 
@@ -33,17 +37,11 @@ public class TutorialController : MonoBehaviour, ISaveable
     {
         SaveManager.Instance.RegisterSaveable(this);
 
-        // Показываем дефолтное сообщение при старте.
-        // Если сохранение загрузится, оно перезапишется в LoadFromSaveData.
+        // Show initial hint (will be overwritten by LoadFromSaveData if save exists)
         if (_currentStep == TutorialStep.BuildStalls)
         {
             ShowHint("Welcome! Buy the Cashier and the Meat Stall to open your market.", 0f);
         }
-    }
-
-    private void OnDestroy()
-    {
-        if (SaveManager.Instance != null) SaveManager.Instance.UnregisterSaveable(this);
     }
 
     private void OnEnable()
@@ -60,6 +58,15 @@ public class TutorialController : MonoBehaviour, ISaveable
         GameEvents.OnUpgradePurchased -= HandleUpgradePurchased;
     }
 
+    private void OnDestroy()
+    {
+        if (SaveManager.Instance != null) SaveManager.Instance.UnregisterSaveable(this);
+    }
+
+    /// <summary>
+    /// Displays a tutorial message.
+    /// </summary>
+    /// <param name="duration">If 0, message stays until manual hide. If > 0, auto-hides.</param>
     public void ShowHint(string text, float duration = 0f)
     {
         if (duration > 0)
@@ -68,6 +75,7 @@ public class TutorialController : MonoBehaviour, ISaveable
             view.Show(text);
     }
 
+    #region Event Handlers
     private void HandleShopOpened()
     {
         if (_currentStep == TutorialStep.BuildStalls)
@@ -93,6 +101,7 @@ public class TutorialController : MonoBehaviour, ISaveable
             FinishTutorial();
         }
     }
+    #endregion
 
     private void FinishTutorial()
     {
@@ -113,8 +122,7 @@ public class TutorialController : MonoBehaviour, ISaveable
         IsReadyForInventory = true;
     }
 
-    // --- ISaveable Реализация ---
-
+    #region ISaveable
     public void PopulateSaveData(GameSaveData saveData)
     {
         saveData.tutorialStepIndex = (int)_currentStep;
@@ -126,28 +134,23 @@ public class TutorialController : MonoBehaviour, ISaveable
         _currentStep = (TutorialStep)saveData.tutorialStepIndex;
         IsReadyForInventory = saveData.isTutorialInventoryReady;
 
-        // --- ИСПРАВЛЕНИЕ ЗДЕСЬ ---
-        // Восстанавливаем текст в зависимости от загруженного этапа
+        // Restore correct text based on state
         switch (_currentStep)
         {
             case TutorialStep.BuildStalls:
                 ShowHint("Welcome! Buy the Cashier and the Meat Stall to open your market.", 0f);
                 break;
-
             case TutorialStep.WaitForCustomers:
                 ShowHint("Great job! The shop is OPEN. Customers are coming...", 0f);
                 break;
-
             case TutorialStep.FirstSaleMade:
                 ShowHint("First profit made! Tap on a building and BUY an upgrade to boost efficiency!", 0f);
                 break;
-
             case TutorialStep.UpgradeDone:
             case TutorialStep.Completed:
-                // Если туториал пройден, скрываем окно (на случай, если оно было открыто дефолтным Start)
                 view.Hide();
                 break;
         }
-        // -------------------------
     }
+    #endregion
 }
