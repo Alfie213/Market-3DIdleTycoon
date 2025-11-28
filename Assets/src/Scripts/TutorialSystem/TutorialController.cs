@@ -9,7 +9,9 @@ public class TutorialController : MonoBehaviour, ISaveable
 {
     public static TutorialController Instance { get; private set; }
 
+    [Header("References")]
     [SerializeField] private TutorialView view;
+    [SerializeField] private TutorialData data; // <-- Ссылка на данные с текстом
 
     public enum TutorialStep
     {
@@ -22,7 +24,6 @@ public class TutorialController : MonoBehaviour, ISaveable
 
     private TutorialStep _currentStep = TutorialStep.BuildStalls;
     
-    // Flags for external systems
     public bool IsReadyForInventory { get; private set; } = false;
     public bool IsTutorialCompleted => _currentStep == TutorialStep.Completed;
     public bool IsUpgradesAllowed => _currentStep >= TutorialStep.FirstSaleMade;
@@ -37,10 +38,10 @@ public class TutorialController : MonoBehaviour, ISaveable
     {
         SaveManager.Instance.RegisterSaveable(this);
 
-        // Show initial hint (will be overwritten by LoadFromSaveData if save exists)
         if (_currentStep == TutorialStep.BuildStalls)
         {
-            ShowHint("Welcome! Buy the Cashier and the Meat Stall to open your market.", 0f);
+            // Используем текст из Data
+            ShowHint(data.welcomeMessage, 0f);
         }
     }
 
@@ -63,10 +64,6 @@ public class TutorialController : MonoBehaviour, ISaveable
         if (SaveManager.Instance != null) SaveManager.Instance.UnregisterSaveable(this);
     }
 
-    /// <summary>
-    /// Displays a tutorial message.
-    /// </summary>
-    /// <param name="duration">If 0, message stays until manual hide. If > 0, auto-hides.</param>
     public void ShowHint(string text, float duration = 0f)
     {
         if (duration > 0)
@@ -81,7 +78,7 @@ public class TutorialController : MonoBehaviour, ISaveable
         if (_currentStep == TutorialStep.BuildStalls)
         {
             _currentStep = TutorialStep.WaitForCustomers;
-            ShowHint("Great job! The shop is OPEN. Customers are coming...", 0f);
+            ShowHint(data.shopOpenedMessage, 0f); // <-- Текст из Data
         }
     }
 
@@ -90,7 +87,7 @@ public class TutorialController : MonoBehaviour, ISaveable
         if (_currentStep == TutorialStep.WaitForCustomers)
         {
             _currentStep = TutorialStep.FirstSaleMade;
-            ShowHint("First profit made! Tap on a building and BUY an upgrade to boost efficiency!", 0f);
+            ShowHint(data.firstProfitMessage, 0f); // <-- Текст из Data
         }
     }
 
@@ -114,7 +111,7 @@ public class TutorialController : MonoBehaviour, ISaveable
         float messageDuration = 12f;
         float delayAfterMessage = 5f;
 
-        ShowHint("You are a professional businessman now! Remember: the more upgrades you buy, the more customers will come! Good luck!", messageDuration);
+        ShowHint(data.completionMessage, messageDuration); // <-- Текст из Data
 
         yield return new WaitForSeconds(messageDuration);
         yield return new WaitForSeconds(delayAfterMessage);
@@ -134,17 +131,17 @@ public class TutorialController : MonoBehaviour, ISaveable
         _currentStep = (TutorialStep)saveData.tutorialStepIndex;
         IsReadyForInventory = saveData.isTutorialInventoryReady;
 
-        // Restore correct text based on state
+        // Восстанавливаем текст, используя данные из ScriptableObject
         switch (_currentStep)
         {
             case TutorialStep.BuildStalls:
-                ShowHint("Welcome! Buy the Cashier and the Meat Stall to open your market.", 0f);
+                ShowHint(data.welcomeMessage, 0f);
                 break;
             case TutorialStep.WaitForCustomers:
-                ShowHint("Great job! The shop is OPEN. Customers are coming...", 0f);
+                ShowHint(data.shopOpenedMessage, 0f);
                 break;
             case TutorialStep.FirstSaleMade:
-                ShowHint("First profit made! Tap on a building and BUY an upgrade to boost efficiency!", 0f);
+                ShowHint(data.firstProfitMessage, 0f);
                 break;
             case TutorialStep.UpgradeDone:
             case TutorialStep.Completed:
