@@ -28417,6 +28417,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ticketRewardAmount: 250
   dropChance: 0.05
+  tutorialData: {fileID: 11400000, guid: d8dc6972323e3c04883cfbf44e6e3639, type: 2}
 --- !u!114 &1792068375
 MonoBehaviour:
   m_ObjectHideFlags: 0
