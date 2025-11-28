@@ -8,7 +8,7 @@ public static class GameEvents
     public static event Action<BuildingController> OnUpgradeWindowRequested;
     
     // --- НОВЫЕ СОБЫТИЯ ДЛЯ ТУТОРИАЛА ---
-    public static event Action OnCustomerServed; // Клиент оплатил и ушел
+    public static event Action OnSaleCompleted; // Клиент оплатил и ушел
     public static event Action OnUpgradePurchased; // Куплен любой апгрейд
 
     public static void InvokeCurrencyChanged(int amount) => OnCurrencyChanged?.Invoke(amount);
@@ -16,6 +16,6 @@ public static class GameEvents
     public static void InvokeShopOpened() => OnShopOpened?.Invoke();
     public static void InvokeUpgradeWindowRequested(BuildingController building) => OnUpgradeWindowRequested?.Invoke(building);
     
-    public static void InvokeCustomerServed() => OnCustomerServed?.Invoke();
+    public static void InvokeSaleCompleted() => OnSaleCompleted?.Invoke();
     public static void InvokeUpgradePurchased() => OnUpgradePurchased?.Invoke();
 }

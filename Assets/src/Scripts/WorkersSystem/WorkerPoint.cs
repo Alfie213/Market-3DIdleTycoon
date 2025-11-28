@@ -91,7 +91,7 @@ public class WorkerPoint : MonoBehaviour
         if (_profit > 0)
         {
             CurrencyController.Instance.AddCurrency(_profit);
-            GameEvents.InvokeCustomerServed();
+            GameEvents.InvokeSaleCompleted();
         }
 
         // 4. Завершение

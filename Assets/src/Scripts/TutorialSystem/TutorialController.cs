@@ -35,14 +35,14 @@ public class TutorialController : MonoBehaviour
     private void OnEnable()
     {
         GameEvents.OnShopOpened += HandleShopOpened;
-        GameEvents.OnCustomerServed += HandleCustomerServed;
+        GameEvents.OnSaleCompleted += HandleSaleCompleted; 
         GameEvents.OnUpgradePurchased += HandleUpgradePurchased;
     }
 
     private void OnDisable()
     {
         GameEvents.OnShopOpened -= HandleShopOpened;
-        GameEvents.OnCustomerServed -= HandleCustomerServed;
+        GameEvents.OnSaleCompleted -= HandleSaleCompleted;
         GameEvents.OnUpgradePurchased -= HandleUpgradePurchased;
     }
 
@@ -55,12 +55,11 @@ public class TutorialController : MonoBehaviour
         }
     }
 
-    private void HandleCustomerServed()
+    private void HandleSaleCompleted()
     {
         if (_currentStep == TutorialStep.WaitForCustomers)
         {
             _currentStep = TutorialStep.FirstSaleMade;
-            // Обновленный текст с призывом к действию
             ShowMessage("First profit made! Tap on a building and BUY an upgrade to boost efficiency!");
         }
     }
