@@ -476,7 +476,10 @@ MonoBehaviour:
     -- License: Attribution 4.0
 
     Coins_Single_22.wav by LittleRobotSoundFactory
-    -- https://freesound.org/s/276225/ -- License: Attribution 4.0'
+    -- https://freesound.org/s/276225/ -- License: Attribution 4.0
+
+    Car Honk
+    by qubodup -- https://freesound.org/s/185479/ -- License: Creative Commons 0'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 7ef1744a1639dcc4f8881fa53a67c586, type: 2}
   m_sharedMaterial: {fileID: 5324852707644431158, guid: 7ef1744a1639dcc4f8881fa53a67c586,
@@ -504,7 +507,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 29.1
+  m_fontSize: 24.7
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
