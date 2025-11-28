@@ -227,6 +227,7 @@ GameObject:
   - component: {fileID: 501300945}
   - component: {fileID: 501300944}
   - component: {fileID: 501300947}
+  - component: {fileID: 501300948}
   m_Layer: 5
   m_Name: LoadGameButton
   m_TagString: Untagged
@@ -352,6 +353,18 @@ MonoBehaviour:
   m_EffectColor: {r: 0, g: 0, b: 0, a: 1}
   m_EffectDistance: {x: 10, y: -5}
   m_UseGraphicAlpha: 1
+--- !u!114 &501300948
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 501300942}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4c47bf845d3841419612df6c41c4ed3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &605385023
 GameObject:
   m_ObjectHideFlags: 0
@@ -1165,6 +1178,7 @@ GameObject:
   - component: {fileID: 1816568750}
   - component: {fileID: 1816568749}
   - component: {fileID: 1816568752}
+  - component: {fileID: 1816568753}
   m_Layer: 5
   m_Name: StartNewGameButton
   m_TagString: Untagged
@@ -1290,6 +1304,18 @@ MonoBehaviour:
   m_EffectColor: {r: 0, g: 0, b: 0, a: 1}
   m_EffectDistance: {x: 10, y: -5}
   m_UseGraphicAlpha: 1
+--- !u!114 &1816568753
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1816568747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4c47bf845d3841419612df6c41c4ed3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1873491101
 GameObject:
   m_ObjectHideFlags: 0

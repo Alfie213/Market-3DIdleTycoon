@@ -15,13 +15,10 @@ public class ATM : MonoBehaviour, IInteractable
     // Реализация интерфейса
     public void Interact()
     {
-        // 1. Даем деньги
         CurrencyController.Instance.AddCurrency(moneyAmount);
-        
-        // 2. Анимируем
         _pulseAnimation.Play();
         
-        // Опционально: можно добавить звук или партиклы
-        Debug.Log($"ATM gave {moneyAmount}$");
+        // Добавляем звук вручную
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayCoinSound(); 
     }
 }

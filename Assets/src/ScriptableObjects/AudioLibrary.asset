@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a16df4531372e704e95edecdaaeaea83, type: 3}
   m_Name: AudioLibrary
   m_EditorClassIdentifier: 
-  backgroundMusic: {fileID: 0}
-  coinSound: {fileID: 0}
-  clickSound: {fileID: 0}
+  backgroundMusic: {fileID: 8300000, guid: 2e0cdf106daa4e04392fe60556de6d43, type: 3}
+  coinSound: {fileID: 8300000, guid: 87a22f7d06a733348884e49558c0e1e2, type: 3}
+  clickSound: {fileID: 8300000, guid: 00eef0ab70291ae469c4d1e6d0d1b00d, type: 3}
