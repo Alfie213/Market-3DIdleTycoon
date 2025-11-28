@@ -1,15 +1,21 @@
 using System;
 using System.Collections.Generic;
 
+/// <summary>
+/// Serializable DTO (Data Transfer Object) for JSON storage.
+/// </summary>
 [Serializable]
 public class GameSaveData
 {
     public int money;
     public int tickets;
+    
     public int tutorialStepIndex;
     public bool isTutorialInventoryReady;
+    
     public bool isFirstTicketDropped;
     public bool isFirstTicketUsed;
+    
     public List<BuildingSaveData> buildings = new List<BuildingSaveData>();
 }
 

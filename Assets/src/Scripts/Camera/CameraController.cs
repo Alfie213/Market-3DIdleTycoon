@@ -1,14 +1,17 @@
 using UnityEngine;
-using UnityEngine.EventSystems; // Обязательно добавляем этот namespace
+using UnityEngine.EventSystems;
 
+/// <summary>
+/// RTS-style camera with drag-to-move and pinch/scroll-to-zoom.
+/// </summary>
 [RequireComponent(typeof(Camera))]
 public class CameraController : MonoBehaviour
 {
-    [Header("Movement Limits")]
+    [Header("Limits")]
     [SerializeField] private Vector2 minPositionLimit;
     [SerializeField] private Vector2 maxPositionLimit;
 
-    [Header("Zoom Settings")]
+    [Header("Zoom")]
     [SerializeField] private float minZoom = 5f;
     [SerializeField] private float maxZoom = 20f;
     [SerializeField] private float zoomSensitivity = 2f; 
@@ -16,7 +19,7 @@ public class CameraController : MonoBehaviour
     [SerializeField] private float zoomLerpSpeed = 10f;
     [SerializeField] private float buttonZoomStep = 2f; 
 
-    [Header("Movement Settings")]
+    [Header("Movement")]
     [SerializeField] private float groundHeight = 0f;
     [SerializeField] private float friction = 5f;
 
@@ -25,18 +28,13 @@ public class CameraController : MonoBehaviour
     private Vector3 _dragOrigin;
     private Vector3 _velocity;
     private bool _isDragging;
-    
     private float _targetZoom; 
 
     private void Awake()
     {
         _camera = GetComponent<Camera>();
         _groundPlane = new Plane(Vector3.up, new Vector3(0, groundHeight, 0));
-        
-        if (_camera.orthographic)
-            _targetZoom = _camera.orthographicSize;
-        else
-            _targetZoom = _camera.fieldOfView;
+        _targetZoom = _camera.orthographic ? _camera.orthographicSize : _camera.fieldOfView;
     }
 
     private void LateUpdate()
@@ -53,23 +51,18 @@ public class CameraController : MonoBehaviour
         HandleMovement();
     }
 
-    // --- ZOOM LOGIC (Без изменений) ---
     private void HandleZoomInput()
     {
-        // ... (код зума остался прежним) ...
         float scrollDelta = 0f;
         if (Input.mouseScrollDelta.y != 0) scrollDelta = -Input.mouseScrollDelta.y * zoomSensitivity;
 
         if (Input.touchCount == 2)
         {
-            Touch touchZero = Input.GetTouch(0);
-            Touch touchOne = Input.GetTouch(1);
-            Vector2 touchZeroPrevPos = touchZero.position - touchZero.deltaPosition;
-            Vector2 touchOnePrevPos = touchOne.position - touchOne.deltaPosition;
-            float prevTouchDeltaMag = (touchZeroPrevPos - touchOnePrevPos).magnitude;
-            float touchDeltaMag = (touchZero.position - touchOne.position).magnitude;
-            float deltaMagnitudeDiff = prevTouchDeltaMag - touchDeltaMag;
-            scrollDelta = deltaMagnitudeDiff * touchZoomSensitivity;
+            Touch t0 = Input.GetTouch(0);
+            Touch t1 = Input.GetTouch(1);
+            float prevDelta = ((t0.position - t0.deltaPosition) - (t1.position - t1.deltaPosition)).magnitude;
+            float curDelta = (t0.position - t1.position).magnitude;
+            scrollDelta = (prevDelta - curDelta) * touchZoomSensitivity;
         }
 
         if (Mathf.Abs(scrollDelta) > 0.01f) ModifyTargetZoom(scrollDelta);
@@ -83,15 +76,10 @@ public class CameraController : MonoBehaviour
             _camera.fieldOfView = Mathf.Lerp(_camera.fieldOfView, _targetZoom, Time.deltaTime * zoomLerpSpeed);
     }
 
-    // --- MOVEMENT LOGIC (ИСПРАВЛЕНО) ---
-
     private void HandleMovement()
     {
-        // 1. НАЖАТИЕ
         if (Input.GetMouseButtonDown(0))
         {
-            // !!! ГЛАВНОЕ ИСПРАВЛЕНИЕ !!!
-            // Если мы нажали на UI элемент - выходим, не начинаем драг
             if (IsPointerOverUI()) return;
 
             Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
@@ -103,19 +91,13 @@ public class CameraController : MonoBehaviour
             }
         }
 
-        // 2. УДЕРЖАНИЕ
         if (Input.GetMouseButton(0) && _isDragging)
         {
-            // Здесь проверку UI делать НЕ нужно.
-            // Если игрок начал тянуть землю и случайно навел палец на кнопку UI в процессе,
-            // камера не должна застревать.
-            
             Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
             if (_groundPlane.Raycast(ray, out float entry))
             {
                 Vector3 currentHit = ray.GetPoint(entry);
                 Vector3 difference = _dragOrigin - currentHit;
-
                 if (difference != Vector3.zero)
                 {
                     transform.position += difference;
@@ -124,41 +106,25 @@ public class CameraController : MonoBehaviour
             }
         }
 
-        // 3. ОТПУСКАНИЕ
-        if (Input.GetMouseButtonUp(0))
-        {
-            _isDragging = false;
-        }
+        if (Input.GetMouseButtonUp(0)) _isDragging = false;
 
-        // 4. ИНЕРЦИЯ
-        if (!_isDragging)
+        if (!_isDragging && _velocity.sqrMagnitude > 0.001f)
         {
-            if (_velocity.sqrMagnitude > 0.001f)
-            {
-                transform.position += _velocity * Time.deltaTime;
-                _velocity = Vector3.Lerp(_velocity, Vector3.zero, friction * Time.deltaTime);
-            }
+            transform.position += _velocity * Time.deltaTime;
+            _velocity = Vector3.Lerp(_velocity, Vector3.zero, friction * Time.deltaTime);
         }
         
         ClampPosition();
     }
 
-    // Вспомогательный метод для проверки UI (Работает и на ПК, и на Мобилке)
     private bool IsPointerOverUI()
     {
-        // 1. Проверка для мыши или тача, который Unity эмулирует как мышь
         if (EventSystem.current.IsPointerOverGameObject()) return true;
-
-        // 2. Проверка конкретно для тачей на мобилке
         if (Input.touchCount > 0)
         {
-            Touch touch = Input.GetTouch(0);
-            if (touch.phase == TouchPhase.Began)
-            {
-                if (EventSystem.current.IsPointerOverGameObject(touch.fingerId)) return true;
-            }
+            Touch t = Input.GetTouch(0);
+            if (t.phase == TouchPhase.Began && EventSystem.current.IsPointerOverGameObject(t.fingerId)) return true;
         }
-
         return false;
     }
 
@@ -166,7 +132,6 @@ public class CameraController : MonoBehaviour
     {
         float x = Mathf.Clamp(transform.position.x, minPositionLimit.x, maxPositionLimit.x);
         float z = Mathf.Clamp(transform.position.z, minPositionLimit.y, maxPositionLimit.y);
-
         if (transform.position.x != x || transform.position.z != z)
         {
             transform.position = new Vector3(x, transform.position.y, z);
@@ -174,20 +139,7 @@ public class CameraController : MonoBehaviour
         }
     }
     
-    // ... ModifyTargetZoom, ZoomIn, ZoomOut, OnDrawGizmos (без изменений) ...
-    private void ModifyTargetZoom(float amount)
-    {
-        _targetZoom += amount;
-        _targetZoom = Mathf.Clamp(_targetZoom, minZoom, maxZoom);
-    }
     public void ZoomIn() => ModifyTargetZoom(-buttonZoomStep);
     public void ZoomOut() => ModifyTargetZoom(buttonZoomStep);
-
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = Color.yellow;
-        Vector3 center = new Vector3((minPositionLimit.x + maxPositionLimit.x) / 2, 0, (minPositionLimit.y + maxPositionLimit.y) / 2);
-        Vector3 size = new Vector3(maxPositionLimit.x - minPositionLimit.x, 1, maxPositionLimit.y - minPositionLimit.y);
-        Gizmos.DrawWireCube(center, size);
-    }
+    private void ModifyTargetZoom(float amount) => _targetZoom = Mathf.Clamp(_targetZoom + amount, minZoom, maxZoom);
 }

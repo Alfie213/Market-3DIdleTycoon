@@ -2,6 +2,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
+/// <summary>
+/// NPC logic using NavMeshAgent and Animator. Handles movement between buildings and queueing.
+/// </summary>
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(Animator))]
 public class Customer : MonoBehaviour
@@ -9,15 +12,13 @@ public class Customer : MonoBehaviour
     private NavMeshAgent _agent;
     private Animator _animator;
     
-    // Используем константу для параметра анимации
     private static readonly int IsMovingKey = Animator.StringToHash(GameConstants.AnimParamIsMoving);
+    private const float InteractionRadius = 2.0f; 
 
     private Queue<BuildingController> _shoppingList;
     private BuildingController _currentTarget;
     private Vector3 _exitPosition;
     private bool _isWaitingInQueue;
-
-    private const float InteractionRadius = 2.0f; 
 
     private void Awake()
     {

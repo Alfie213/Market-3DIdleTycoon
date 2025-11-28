@@ -3,40 +3,30 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Controls the logic of a single building (Construction, Upgrades, Worker Assignment).
-/// Acts as a central hub for interaction and visual state updates.
+/// Core logic for a building. Handles construction, upgrades, and worker management.
 /// </summary>
 public class BuildingController : MonoBehaviour, IInteractable, ISaveable
 {
-    [Header("Save System")]
-    [Tooltip("Unique ID is required to identify this building in the save file.")]
+    [Header("Identity & Data")]
     [SerializeField] private string buildingID;
-
-    [Header("Data & Config")]
     [SerializeField] private BuildingData buildingData;
     
-    [Header("Visual References")]
+    [Header("Visuals")]
     [SerializeField] private GameObject visualModel;
     [SerializeField] private GameObject constructionSiteVisuals;
     [SerializeField] private ConstructionPriceDisplay priceDisplay; 
     
-    [Header("Points")]
+    [Header("Setup")]
     [SerializeField] private Transform interactionPoint; 
     [SerializeField] private List<WorkerPoint> workerPoints; 
 
-    /// <summary>
-    /// Fired when any stat (workers count, speed, busy state) changes.
-    /// Used by UI to update the view in real-time.
-    /// </summary>
     public event Action OnStatsChanged;
 
-    // Runtime state
     private bool _isBuilt = false;
     private int _currentUnlockedWorkers;
     private float _currentProcessingTime;
     private int _currentSpeedLevel = 0;
 
-    #region Public Properties
     public BuildingData Data => buildingData;
     public bool IsBuilt => _isBuilt;
     public Transform InteractionPoint => interactionPoint;
@@ -54,21 +44,16 @@ public class BuildingController : MonoBehaviour, IInteractable, ISaveable
             return count;
         }
     }
-    #endregion
 
     private void Awake()
     {
-        // Initialize default stats from ScriptableObject
         _currentUnlockedWorkers = Mathf.Min(buildingData.BaseWorkers, buildingData.MaxPossibleWorkers);
         _currentProcessingTime = buildingData.BaseProcessingTime;
     }
 
     private void Start()
     {
-        if (string.IsNullOrEmpty(buildingID))
-        {
-            Debug.LogError($"Building {gameObject.name} has no ID!");
-        }
+        if (string.IsNullOrEmpty(buildingID)) Debug.LogError($"Building {gameObject.name} has no ID!");
 
         SaveManager.Instance.RegisterSaveable(this);
 
@@ -80,7 +65,6 @@ public class BuildingController : MonoBehaviour, IInteractable, ISaveable
 
     private void OnEnable()
     {
-        // Subscribe to internal events
         foreach (var wp in workerPoints) wp.OnStateChanged += HandleWorkerStateChanged;
         if (priceDisplay != null) priceDisplay.OnBuyClicked += TryConstruct;
     }
@@ -98,9 +82,6 @@ public class BuildingController : MonoBehaviour, IInteractable, ISaveable
 
     private void HandleWorkerStateChanged() => OnStatsChanged?.Invoke();
 
-    /// <summary>
-    /// Handles player input (Click on building).
-    /// </summary>
     public void Interact()
     {
         if (!_isBuilt)
@@ -109,7 +90,6 @@ public class BuildingController : MonoBehaviour, IInteractable, ISaveable
         }
         else
         {
-            // Validation: Check if upgrades are allowed by Tutorial/Shop state
             if (ShopController.Instance != null && !ShopController.Instance.IsShopOpen) return;
             if (TutorialController.Instance != null && !TutorialController.Instance.IsUpgradesAllowed) return;
             
@@ -135,7 +115,6 @@ public class BuildingController : MonoBehaviour, IInteractable, ISaveable
         if (_currentSpeedLevel >= buildingData.MaxSpeedUpgrades) return;
 
         _currentSpeedLevel++;
-        // Reduce processing time by 10% per level
         _currentProcessingTime = Mathf.Max(0.1f, _currentProcessingTime * 0.9f);
         
         RefreshWorkerPoints();
@@ -153,10 +132,6 @@ public class BuildingController : MonoBehaviour, IInteractable, ISaveable
         GameEvents.InvokeUpgradePurchased();
     }
 
-    /// <summary>
-    /// Updates the state of individual WorkerPoints based on current upgrades.
-    /// Passes new speed and profit data to workers.
-    /// </summary>
     private void RefreshWorkerPoints()
     {
         if (!_isBuilt)
@@ -185,9 +160,6 @@ public class BuildingController : MonoBehaviour, IInteractable, ISaveable
         }
     }
 
-    /// <summary>
-    /// Checks if there is any free spot in queues for a new customer.
-    /// </summary>
     public bool CanAcceptCustomer()
     {
         if (!_isBuilt) return false;
@@ -204,9 +176,6 @@ public class BuildingController : MonoBehaviour, IInteractable, ISaveable
         if (bestPoint != null) bestPoint.EnqueueCustomer(customer);
     }
 
-    /// <summary>
-    /// Finds the worker with the shortest queue.
-    /// </summary>
     private WorkerPoint GetBestWorkerPoint()
     {
         WorkerPoint bestPoint = null;
@@ -225,7 +194,6 @@ public class BuildingController : MonoBehaviour, IInteractable, ISaveable
         return bestPoint;
     }
 
-    #region ISaveable Implementation
     public void PopulateSaveData(GameSaveData saveData)
     {
         BuildingSaveData data = saveData.buildings.Find(b => b.id == buildingID);
@@ -249,7 +217,6 @@ public class BuildingController : MonoBehaviour, IInteractable, ISaveable
             _currentSpeedLevel = data.speedLevel;
             _currentUnlockedWorkers = data.unlockedWorkers;
             
-            // Recalculate stats based on loaded levels
             _currentProcessingTime = buildingData.BaseProcessingTime * Mathf.Pow(0.9f, _currentSpeedLevel);
             _currentProcessingTime = Mathf.Max(0.1f, _currentProcessingTime);
 
@@ -259,5 +226,4 @@ public class BuildingController : MonoBehaviour, IInteractable, ISaveable
             if (_isBuilt) GameEvents.InvokeBuildingConstructed(this);
         }
     }
-    #endregion
 }

@@ -1,25 +1,23 @@
 using System.Collections;
 using UnityEngine;
 
-// Класс переименован, так как подходит и для UI, и для 3D объектов
+/// <summary>
+/// Generic simple animation (Zoom In/Out) for UI or 3D objects.
+/// </summary>
 public class PulseAnimation : MonoBehaviour
 {
-    [Header("Settings")]
-    [SerializeField] private float pulseScale = 1.1f; // Для 3D лучше ставить поменьше (например 1.1)
+    [SerializeField] private float pulseScale = 1.1f;
     [SerializeField] private float duration = 0.15f;
 
     private Vector3 _originalScale;
     private Coroutine _animationCoroutine;
 
-    private void Awake()
-    {
-        _originalScale = transform.localScale;
-    }
+    private void Awake() => _originalScale = transform.localScale;
+    private void OnDisable() => transform.localScale = _originalScale;
 
     public void Play()
     {
         if (!gameObject.activeInHierarchy) return;
-
         if (_animationCoroutine != null) StopCoroutine(_animationCoroutine);
         _animationCoroutine = StartCoroutine(PulseRoutine());
     }
@@ -29,31 +27,20 @@ public class PulseAnimation : MonoBehaviour
         float timer = 0f;
         Vector3 targetScale = _originalScale * pulseScale;
 
-        // Zoom In
         while (timer < duration / 2)
         {
             timer += Time.deltaTime;
-            float progress = timer / (duration / 2);
-            transform.localScale = Vector3.Lerp(_originalScale, targetScale, progress);
+            transform.localScale = Vector3.Lerp(_originalScale, targetScale, timer / (duration / 2));
             yield return null;
         }
 
-        // Zoom Out
         timer = 0f;
         while (timer < duration / 2)
         {
             timer += Time.deltaTime;
-            float progress = timer / (duration / 2);
-            transform.localScale = Vector3.Lerp(targetScale, _originalScale, progress);
+            transform.localScale = Vector3.Lerp(targetScale, _originalScale, timer / (duration / 2));
             yield return null;
         }
-
-        transform.localScale = _originalScale;
-        _animationCoroutine = null;
-    }
-
-    private void OnDisable()
-    {
         transform.localScale = _originalScale;
     }
 }

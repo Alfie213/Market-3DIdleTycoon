@@ -1,17 +1,23 @@
-// Интерфейс для объектов, с которыми можно взаимодействовать (кликом)
+/// <summary>
+/// Implemented by objects that respond to player clicks (Buildings, ATMs, etc.).
+/// </summary>
 public interface IInteractable
 {
     void Interact();
 }
 
-// Интерфейс для системы сохранений
+/// <summary>
+/// Implemented by systems that need to persist data.
+/// </summary>
 public interface ISaveable
 {
     void PopulateSaveData(GameSaveData saveData);
     void LoadFromSaveData(GameSaveData saveData);
 }
 
-// Интерфейс для UI окон (Новый)
+/// <summary>
+/// Standard interface for UI Windows.
+/// </summary>
 public interface IView
 {
     void Show();

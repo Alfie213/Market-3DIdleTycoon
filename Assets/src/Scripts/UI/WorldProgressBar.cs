@@ -1,18 +1,16 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class WorldProgressBar : WorldSpaceBillboard // Наследуем
+public class WorldProgressBar : WorldSpaceBillboard
 {
     [SerializeField] private Slider slider;
     [SerializeField] private GameObject visuals;
 
     protected override void Awake()
     {
-        base.Awake(); // Важно вызывать base.Awake(), чтобы найти камеру
+        base.Awake();
         Hide();
     }
-    
-    // LateUpdate больше не нужен, он есть в родителе
 
     public void SetProgress(float value)
     {
@@ -20,8 +18,5 @@ public class WorldProgressBar : WorldSpaceBillboard // Наследуем
         slider.value = value;
     }
 
-    public void Hide()
-    {
-        visuals.SetActive(false);
-    }
+    public void Hide() => visuals.SetActive(false);
 }

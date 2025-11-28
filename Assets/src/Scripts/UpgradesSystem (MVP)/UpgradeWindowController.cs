@@ -1,5 +1,8 @@
 using UnityEngine;
 
+/// <summary>
+/// Presenter for the Upgrade Window. Connects Building data to UI View.
+/// </summary>
 public class UpgradeWindowController : MonoBehaviour
 {
     [SerializeField] private UpgradeWindowView view;
@@ -24,18 +27,12 @@ public class UpgradeWindowController : MonoBehaviour
         view.OnSpeedUpgradeClicked -= TryUpgradeSpeed;
         view.OnWorkersUpgradeClicked -= TryUpgradeWorkers;
         
-        if (_currentBuilding != null)
-        {
-            _currentBuilding.OnStatsChanged -= RefreshUI;
-        }
+        if (_currentBuilding != null) _currentBuilding.OnStatsChanged -= RefreshUI;
     }
 
     private void HandleCurrencyChanged(int newAmount)
     {
-        if (_currentBuilding != null)
-        {
-            RefreshUI();
-        }
+        if (_currentBuilding != null) RefreshUI();
     }
 
     private void OpenWindow(BuildingController building)
@@ -43,12 +40,7 @@ public class UpgradeWindowController : MonoBehaviour
         if (_currentBuilding != null) _currentBuilding.OnStatsChanged -= RefreshUI;
         _currentBuilding = building;
         _currentBuilding.OnStatsChanged += RefreshUI;
-        
-        // --- БЫЛО: view.SetWindowActive(true); ---
-        // --- СТАЛО: ---
-        view.Show(); 
-        // --------------
-        
+        view.Show();
         RefreshUI();
     }
 
@@ -59,11 +51,7 @@ public class UpgradeWindowController : MonoBehaviour
             _currentBuilding.OnStatsChanged -= RefreshUI;
             _currentBuilding = null;
         }
-        
-        // --- БЫЛО: view.SetWindowActive(false); ---
-        // --- СТАЛО: ---
         view.Hide();
-        // --------------
     }
 
     private void RefreshUI()
@@ -71,7 +59,6 @@ public class UpgradeWindowController : MonoBehaviour
         if (_currentBuilding == null) return;
 
         view.UpdateInfo(_currentBuilding.Data.BuildingName, _currentBuilding.Data.ProfitPerCustomer);
-        
         view.UpdateStats(
             _currentBuilding.CurrentProcessingTime,
             _currentBuilding.CurrentUnlockedWorkers,
@@ -88,22 +75,12 @@ public class UpgradeWindowController : MonoBehaviour
         bool canAffordSpeed = currentMoney >= speedCost;
         bool canAffordWorkers = currentMoney >= workerCost;
         
-        view.UpdateCosts(
-            speedCost,
-            workerCost,
-            isMaxSpeed,
-            isMaxWorkers,
-            canAffordSpeed,
-            canAffordWorkers
-        );
+        view.UpdateCosts(speedCost, workerCost, isMaxSpeed, isMaxWorkers, canAffordSpeed, canAffordWorkers);
     }
 
     private void TryUpgradeSpeed()
     {
-        if (_currentBuilding == null) return;
-        if (_currentBuilding.CurrentSpeedLevel >= _currentBuilding.Data.MaxSpeedUpgrades) return;
-
-        if (CurrencyController.Instance.TrySpendCurrency(_currentBuilding.Data.SpeedUpgradeCost))
+        if (_currentBuilding != null && CurrencyController.Instance.TrySpendCurrency(_currentBuilding.Data.SpeedUpgradeCost))
         {
             _currentBuilding.UpgradeSpeed();
         }
@@ -111,9 +88,7 @@ public class UpgradeWindowController : MonoBehaviour
 
     private void TryUpgradeWorkers()
     {
-        if (_currentBuilding == null) return;
-        
-        if (CurrencyController.Instance.TrySpendCurrency(_currentBuilding.Data.WorkerUpgradeCost))
+        if (_currentBuilding != null && CurrencyController.Instance.TrySpendCurrency(_currentBuilding.Data.WorkerUpgradeCost))
         {
             _currentBuilding.UpgradeWorkers();
         }

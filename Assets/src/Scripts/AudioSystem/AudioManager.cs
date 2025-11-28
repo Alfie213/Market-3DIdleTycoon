@@ -1,5 +1,8 @@
 using UnityEngine;
 
+/// <summary>
+/// Persistent audio manager for Music and SFX.
+/// </summary>
 public class AudioManager : MonoBehaviour
 {
     public static AudioManager Instance { get; private set; }
@@ -20,16 +23,10 @@ public class AudioManager : MonoBehaviour
             DontDestroyOnLoad(gameObject);
             InitializeSources();
         }
-        else
-        {
-            Destroy(gameObject);
-        }
+        else Destroy(gameObject);
     }
 
-    private void Start()
-    {
-        PlayMusic(audioLibrary.backgroundMusic);
-    }
+    private void Start() => PlayMusic(audioLibrary.backgroundMusic);
 
     private void InitializeSources()
     {

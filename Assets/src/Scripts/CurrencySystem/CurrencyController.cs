@@ -1,5 +1,8 @@
 using UnityEngine;
 
+/// <summary>
+/// Manages player's soft currency.
+/// </summary>
 public class CurrencyController : MonoBehaviour, ISaveable
 {
     public static CurrencyController Instance { get; private set; }
@@ -13,14 +16,12 @@ public class CurrencyController : MonoBehaviour, ISaveable
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
-
         _currencyCount = startCurrency;
     }
 
     private void Start()
     {
         SaveManager.Instance.RegisterSaveable(this);
-        // Первичная инициализация UI
         GameEvents.InvokeCurrencyChanged(_currencyCount);
     }
 
@@ -45,17 +46,10 @@ public class CurrencyController : MonoBehaviour, ISaveable
         _currencyCount += amount;
         GameEvents.InvokeCurrencyChanged(_currencyCount);
         
-        if (AudioManager.Instance != null)
-        {
-            AudioManager.Instance.PlayCoinSound();
-        }
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayCoinSound();
     }
 
-    public void PopulateSaveData(GameSaveData saveData)
-    {
-        saveData.money = _currencyCount;
-    }
-
+    public void PopulateSaveData(GameSaveData saveData) => saveData.money = _currencyCount;
     public void LoadFromSaveData(GameSaveData saveData)
     {
         _currencyCount = saveData.money;

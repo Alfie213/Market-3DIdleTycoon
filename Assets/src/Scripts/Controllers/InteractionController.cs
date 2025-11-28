@@ -1,6 +1,10 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
+/// <summary>
+/// Handles raycasting logic for clicking on 3D objects (buildings, ATMs).
+/// Supports drag threshold to distinguish clicks from camera movement.
+/// </summary>
 public class InteractionController : MonoBehaviour
 {
     [SerializeField] private LayerMask interactableLayer;
@@ -10,15 +14,9 @@ public class InteractionController : MonoBehaviour
     private IInteractable _pressedObject;
     private Vector3 _pointerDownPosition;
 
-    private void Awake()
-    {
-        _mainCamera = Camera.main;
-    }
+    private void Awake() => _mainCamera = Camera.main;
 
-    private void Update()
-    {
-        HandleInput();
-    }
+    private void Update() => HandleInput();
 
     private void HandleInput()
     {
@@ -46,15 +44,10 @@ public class InteractionController : MonoBehaviour
             }
 
             IInteractable releasedObject = GetInteractableUnderCursor();
-
             if (releasedObject != null && releasedObject == _pressedObject)
             {
-                if (!IsPointerOverUI())
-                {
-                    _pressedObject.Interact();
-                }
+                if (!IsPointerOverUI()) _pressedObject.Interact();
             }
-
             _pressedObject = null;
         }
     }
@@ -78,10 +71,7 @@ public class InteractionController : MonoBehaviour
         Ray ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hit, 100f, interactableLayer))
         {
-            if (hit.collider.TryGetComponent(out IInteractable interactable))
-            {
-                return interactable;
-            }
+            if (hit.collider.TryGetComponent(out IInteractable interactable)) return interactable;
         }
         return null;
     }

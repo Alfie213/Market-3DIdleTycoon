@@ -2,16 +2,14 @@ using System.Collections;
 using UnityEngine;
 
 /// <summary>
-/// Manages the game onboarding flow.
-/// Shows hints based on game events (Sales, Building, etc.).
+/// Controls the tutorial flow state machine.
 /// </summary>
 public class TutorialController : MonoBehaviour, ISaveable
 {
     public static TutorialController Instance { get; private set; }
 
-    [Header("References")]
     [SerializeField] private TutorialView view;
-    [SerializeField] private TutorialData data; // <-- Ссылка на данные с текстом
+    [SerializeField] private TutorialData data;
 
     public enum TutorialStep
     {
@@ -37,12 +35,15 @@ public class TutorialController : MonoBehaviour, ISaveable
     private void Start()
     {
         SaveManager.Instance.RegisterSaveable(this);
-
         if (_currentStep == TutorialStep.BuildStalls)
         {
-            // Используем текст из Data
             ShowHint(data.welcomeMessage, 0f);
         }
+    }
+
+    private void OnDestroy()
+    {
+        if (SaveManager.Instance != null) SaveManager.Instance.UnregisterSaveable(this);
     }
 
     private void OnEnable()
@@ -59,26 +60,18 @@ public class TutorialController : MonoBehaviour, ISaveable
         GameEvents.OnUpgradePurchased -= HandleUpgradePurchased;
     }
 
-    private void OnDestroy()
-    {
-        if (SaveManager.Instance != null) SaveManager.Instance.UnregisterSaveable(this);
-    }
-
     public void ShowHint(string text, float duration = 0f)
     {
-        if (duration > 0)
-            view.ShowAndHideDelayed(text, duration);
-        else
-            view.Show(text);
+        if (duration > 0) view.ShowAndHideDelayed(text, duration);
+        else view.Show(text);
     }
 
-    #region Event Handlers
     private void HandleShopOpened()
     {
         if (_currentStep == TutorialStep.BuildStalls)
         {
             _currentStep = TutorialStep.WaitForCustomers;
-            ShowHint(data.shopOpenedMessage, 0f); // <-- Текст из Data
+            ShowHint(data.shopOpenedMessage, 0f);
         }
     }
 
@@ -87,7 +80,7 @@ public class TutorialController : MonoBehaviour, ISaveable
         if (_currentStep == TutorialStep.WaitForCustomers)
         {
             _currentStep = TutorialStep.FirstSaleMade;
-            ShowHint(data.firstProfitMessage, 0f); // <-- Текст из Data
+            ShowHint(data.firstProfitMessage, 0f);
         }
     }
 
@@ -98,7 +91,6 @@ public class TutorialController : MonoBehaviour, ISaveable
             FinishTutorial();
         }
     }
-    #endregion
 
     private void FinishTutorial()
     {
@@ -111,7 +103,7 @@ public class TutorialController : MonoBehaviour, ISaveable
         float messageDuration = 12f;
         float delayAfterMessage = 5f;
 
-        ShowHint(data.completionMessage, messageDuration); // <-- Текст из Data
+        ShowHint(data.completionMessage, messageDuration);
 
         yield return new WaitForSeconds(messageDuration);
         yield return new WaitForSeconds(delayAfterMessage);
@@ -119,7 +111,6 @@ public class TutorialController : MonoBehaviour, ISaveable
         IsReadyForInventory = true;
     }
 
-    #region ISaveable
     public void PopulateSaveData(GameSaveData saveData)
     {
         saveData.tutorialStepIndex = (int)_currentStep;
@@ -131,23 +122,13 @@ public class TutorialController : MonoBehaviour, ISaveable
         _currentStep = (TutorialStep)saveData.tutorialStepIndex;
         IsReadyForInventory = saveData.isTutorialInventoryReady;
 
-        // Восстанавливаем текст, используя данные из ScriptableObject
         switch (_currentStep)
         {
-            case TutorialStep.BuildStalls:
-                ShowHint(data.welcomeMessage, 0f);
-                break;
-            case TutorialStep.WaitForCustomers:
-                ShowHint(data.shopOpenedMessage, 0f);
-                break;
-            case TutorialStep.FirstSaleMade:
-                ShowHint(data.firstProfitMessage, 0f);
-                break;
+            case TutorialStep.BuildStalls: ShowHint(data.welcomeMessage, 0f); break;
+            case TutorialStep.WaitForCustomers: ShowHint(data.shopOpenedMessage, 0f); break;
+            case TutorialStep.FirstSaleMade: ShowHint(data.firstProfitMessage, 0f); break;
             case TutorialStep.UpgradeDone:
-            case TutorialStep.Completed:
-                view.Hide();
-                break;
+            case TutorialStep.Completed: view.Hide(); break;
         }
     }
-    #endregion
 }

@@ -7,6 +7,6 @@ public class AudioLibrary : ScriptableObject
     public AudioClip backgroundMusic;
 
     [Header("SFX")]
-    public AudioClip coinSound; // Звук получения денег
-    public AudioClip clickSound; // Звук нажатия кнопки
+    public AudioClip coinSound;
+    public AudioClip clickSound;
 }

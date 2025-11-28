@@ -5,16 +5,17 @@ using UnityEngine.UI;
 
 public class UpgradeWindowView : MonoBehaviour, IView
 {
-    [Header("Main Info")]
+    [Header("Containers")]
     [SerializeField] private GameObject windowRoot;
     [SerializeField] private GameObject blackoutObject;
     
+    [Header("Labels")]
     [SerializeField] private TextMeshProUGUI buildingNameText;
     [SerializeField] private TextMeshProUGUI profitText;
     [SerializeField] private TextMeshProUGUI speedText;
     [SerializeField] private TextMeshProUGUI workersText;
 
-    [Header("Actions")]
+    [Header("Buttons & Costs")]
     [SerializeField] private Button closeButton;
     [SerializeField] private Button speedUpgradeButton;
     [SerializeField] private TextMeshProUGUI speedCostText;
@@ -58,7 +59,6 @@ public class UpgradeWindowView : MonoBehaviour, IView
 
     public void UpdateCosts(int speedCost, int workerCost, bool maxSpeedReached, bool maxWorkersReached, bool canAffordSpeed, bool canAffordWorkers)
     {
-        // Speed
         if (maxSpeedReached)
         {
             speedCostText.text = "MAX";
@@ -70,7 +70,6 @@ public class UpgradeWindowView : MonoBehaviour, IView
             speedUpgradeButton.interactable = canAffordSpeed;
         }
 
-        // Workers
         if (maxWorkersReached)
         {
             workersCostText.text = "MAX";
