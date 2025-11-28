@@ -36,20 +36,6 @@ public class AudioManager : MonoBehaviour
         PlayMusic(audioLibrary.backgroundMusic);
     }
 
-    private void OnEnable()
-    {
-        // Подписываемся на игровые события для автоматических звуков
-        GameEvents.OnSaleCompleted += PlayCoinSound;
-        
-        // Если хочешь звук при выпадении билета:
-        GameEvents.OnTicketsChanged += (count) => { if(count > 0) PlayCoinSound(); };
-    }
-
-    private void OnDisable()
-    {
-        GameEvents.OnSaleCompleted -= PlayCoinSound;
-    }
-
     private void InitializeSources()
     {
         // Создаем источники звука программно, чтобы не настраивать их на сцене

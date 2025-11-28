@@ -63,5 +63,14 @@ public class CurrencyController : MonoBehaviour, ISaveable
         
         _currencyCount += amount;
         GameEvents.InvokeCurrencyChanged(_currencyCount);
+        
+        // --- ДОБАВЛЕНО ---
+        // Централизованный вызов звука. 
+        // Теперь неважно, откуда пришли деньги - звук будет всегда.
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayCoinSound();
+        }
+        // -----------------
     }
 }
