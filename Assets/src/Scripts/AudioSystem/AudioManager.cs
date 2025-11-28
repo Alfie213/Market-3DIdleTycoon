@@ -9,10 +9,6 @@ public class AudioManager : MonoBehaviour
     private AudioSource _musicSource;
     private AudioSource _sfxSource;
 
-    private const string MusicMuteKey = "MusicMute";
-    private const string SFXMuteKey = "SFXMute";
-
-    // Публичные свойства для UI (чтобы знать, ставить галочку или нет)
     public bool IsMusicEnabled => !_musicSource.mute;
     public bool IsSFXEnabled => !_sfxSource.mute;
 
@@ -32,13 +28,11 @@ public class AudioManager : MonoBehaviour
 
     private void Start()
     {
-        // Запускаем музыку сразу при старте игры
         PlayMusic(audioLibrary.backgroundMusic);
     }
 
     private void InitializeSources()
     {
-        // Создаем источники звука программно, чтобы не настраивать их на сцене
         _musicSource = gameObject.AddComponent<AudioSource>();
         _musicSource.loop = true;
         _musicSource.playOnAwake = false;
@@ -46,40 +40,26 @@ public class AudioManager : MonoBehaviour
         _sfxSource = gameObject.AddComponent<AudioSource>();
         _sfxSource.playOnAwake = false;
 
-        // Загружаем сохраненные настройки
-        _musicSource.mute = PlayerPrefs.GetInt(MusicMuteKey, 0) == 1;
-        _sfxSource.mute = PlayerPrefs.GetInt(SFXMuteKey, 0) == 1;
+        _musicSource.mute = PlayerPrefs.GetInt(GameConstants.MusicMuteKey, 0) == 1;
+        _sfxSource.mute = PlayerPrefs.GetInt(GameConstants.SfxMuteKey, 0) == 1;
     }
-
-    // --- ПУБЛИЧНЫЕ МЕТОДЫ ДЛЯ UI ---
 
     public void SetMusicEnabled(bool isEnabled)
     {
         _musicSource.mute = !isEnabled;
-        PlayerPrefs.SetInt(MusicMuteKey, !isEnabled ? 1 : 0);
+        PlayerPrefs.SetInt(GameConstants.MusicMuteKey, !isEnabled ? 1 : 0);
         PlayerPrefs.Save();
     }
 
     public void SetSFXEnabled(bool isEnabled)
     {
         _sfxSource.mute = !isEnabled;
-        PlayerPrefs.SetInt(SFXMuteKey, !isEnabled ? 1 : 0);
+        PlayerPrefs.SetInt(GameConstants.SfxMuteKey, !isEnabled ? 1 : 0);
         PlayerPrefs.Save();
     }
 
-    // --- ЛОГИКА ВОСПРОИЗВЕДЕНИЯ ---
-
-    public void PlayClickSound()
-    {
-        PlaySFX(audioLibrary.clickSound);
-    }
-
-    public void PlayCoinSound()
-    {
-        // Используем PlayOneShot, чтобы звуки могли накладываться друг на друга
-        // (например, если много продаж одновременно)
-        PlaySFX(audioLibrary.coinSound);
-    }
+    public void PlayClickSound() => PlaySFX(audioLibrary.clickSound);
+    public void PlayCoinSound() => PlaySFX(audioLibrary.coinSound);
 
     private void PlayMusic(AudioClip clip)
     {

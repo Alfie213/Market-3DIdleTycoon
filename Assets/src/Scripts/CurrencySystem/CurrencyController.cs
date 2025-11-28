@@ -7,10 +7,7 @@ public class CurrencyController : MonoBehaviour, ISaveable
     [SerializeField] private int startCurrency = 150;
     
     private int _currencyCount;
-
-    // --- ДОБАВЛЕНО ---
     public int CurrentCurrency => _currencyCount;
-    // -----------------
 
     private void Awake()
     {
@@ -22,30 +19,14 @@ public class CurrencyController : MonoBehaviour, ISaveable
 
     private void Start()
     {
-        SaveManager.Instance.RegisterSaveable(this); // Регистрируемся
-        
-        // ВАЖНО: Мы не вызываем LoadGame() здесь.
-        // SaveManager сам вызовет LoadFromSaveData, когда будет нужно.
-        // Но для начального состояния валюты мы отправляем ивент.
-        GameEvents.InvokeCurrencyChanged(_currencyCount); 
+        SaveManager.Instance.RegisterSaveable(this);
+        // Первичная инициализация UI
+        GameEvents.InvokeCurrencyChanged(_currencyCount);
     }
-    
+
     private void OnDestroy()
     {
         if (SaveManager.Instance != null) SaveManager.Instance.UnregisterSaveable(this);
-    }
-
-    // --- РЕАЛИЗАЦИЯ ИНТЕРФЕЙСА ---
-
-    public void PopulateSaveData(GameSaveData saveData)
-    {
-        saveData.money = _currencyCount;
-    }
-
-    public void LoadFromSaveData(GameSaveData saveData)
-    {
-        _currencyCount = saveData.money;
-        GameEvents.InvokeCurrencyChanged(_currencyCount);
     }
 
     public bool TrySpendCurrency(int amount)
@@ -64,13 +45,20 @@ public class CurrencyController : MonoBehaviour, ISaveable
         _currencyCount += amount;
         GameEvents.InvokeCurrencyChanged(_currencyCount);
         
-        // --- ДОБАВЛЕНО ---
-        // Централизованный вызов звука. 
-        // Теперь неважно, откуда пришли деньги - звук будет всегда.
         if (AudioManager.Instance != null)
         {
             AudioManager.Instance.PlayCoinSound();
         }
-        // -----------------
+    }
+
+    public void PopulateSaveData(GameSaveData saveData)
+    {
+        saveData.money = _currencyCount;
+    }
+
+    public void LoadFromSaveData(GameSaveData saveData)
+    {
+        _currencyCount = saveData.money;
+        GameEvents.InvokeCurrencyChanged(_currencyCount);
     }
 }

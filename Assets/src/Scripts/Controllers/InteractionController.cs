@@ -3,12 +3,10 @@ using UnityEngine.EventSystems;
 
 public class InteractionController : MonoBehaviour
 {
-    [SerializeField] private LayerMask interactableLayer; // Переименовали для ясности (было buildingLayer)
+    [SerializeField] private LayerMask interactableLayer;
     [SerializeField] private float dragThreshold = 40f; 
 
     private Camera _mainCamera;
-    
-    // Теперь храним интерфейс, а не конкретный класс здания
     private IInteractable _pressedObject;
     private Vector3 _pointerDownPosition;
 
@@ -24,7 +22,6 @@ public class InteractionController : MonoBehaviour
 
     private void HandleInput()
     {
-        // 1. НАЖАТИЕ
         if (Input.GetMouseButtonDown(0))
         {
             if (IsPointerOverUI()) 
@@ -37,7 +34,6 @@ public class InteractionController : MonoBehaviour
             _pointerDownPosition = Input.mousePosition;
         }
 
-        // 2. ОТПУСКАНИЕ
         if (Input.GetMouseButtonUp(0))
         {
             if (_pressedObject == null) return;
@@ -51,8 +47,6 @@ public class InteractionController : MonoBehaviour
 
             IInteractable releasedObject = GetInteractableUnderCursor();
 
-            // Сравниваем объекты. Если это один и тот же объект (и он не null) -> Interact
-            // (Сравниваем как объекты Unity, так как интерфейсы напрямую сравнивать опасно, если объект уничтожен)
             if (releasedObject != null && releasedObject == _pressedObject)
             {
                 if (!IsPointerOverUI())
@@ -79,7 +73,6 @@ public class InteractionController : MonoBehaviour
         return false;
     }
 
-    // Универсальный метод поиска
     private IInteractable GetInteractableUnderCursor()
     {
         Ray ray = _mainCamera.ScreenPointToRay(Input.mousePosition);

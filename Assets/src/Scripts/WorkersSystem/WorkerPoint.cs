@@ -10,9 +10,8 @@ public class WorkerPoint : MonoBehaviour
     [SerializeField] private WorldProgressBar progressBar;
     
     [Header("Configuration")]
-    [Tooltip("Точка, где стоит ОБСЛУЖИВАЕМЫЙ клиент. Синяя стрелка (Z) должна смотреть в лицо кассиру!")]
     [SerializeField] private Transform queueOrigin;
-    [SerializeField] private float queueSpacing = 1.3f; // Расстояние между людьми
+    [SerializeField] private float queueSpacing = 1.3f;
 
     public event Action OnStateChanged;
 
@@ -64,13 +63,9 @@ public class WorkerPoint : MonoBehaviour
         _isBusy = true;
         OnStateChanged?.Invoke();
 
-        // Берем первого, но НЕ удаляем из очереди (он все еще занимает место)
         Customer currentCustomer = _localQueue.Peek();
-        
-        // 1. Клиент идет к кассе
         currentCustomer.MoveToPosition(queueOrigin.position);
 
-        // Ждем пока дойдет
         float arrivalTimeout = 10f; 
         while (!currentCustomer.IsAtTargetPosition() && arrivalTimeout > 0)
         {
@@ -78,7 +73,6 @@ public class WorkerPoint : MonoBehaviour
             yield return null;
         }
 
-        // 2. Обработка (прогресс бар)
         float timer = 0f;
         while (timer < _processingTime)
         {
@@ -87,27 +81,20 @@ public class WorkerPoint : MonoBehaviour
             yield return null;
         }
 
-        // 3. Награда
         if (_profit > 0)
         {
             CurrencyController.Instance.AddCurrency(_profit);
             GameEvents.InvokeSaleCompleted();
         }
 
-        // 4. Завершение
         currentCustomer.CompleteCurrentTask();
-        
-        // Удаляем из очереди только СЕЙЧАС
         _localQueue.Dequeue();
 
         if (progressBar) progressBar.Hide();
         _isBusy = false;
         OnStateChanged?.Invoke();
 
-        // Сдвигаем остальных
         UpdateQueuePositions();
-        
-        // Берем следующего
         TryProcessNext();
     }
 
@@ -116,34 +103,25 @@ public class WorkerPoint : MonoBehaviour
         int index = 0;
         foreach (var customer in _localQueue)
         {
-            // Если мы сейчас заняты обработкой, то нулевой клиент (тот, кого обслуживают)
-            // уже управляется корутиной ProcessRoutine. Его трогать не надо, чтобы не дергать анимацию.
-            // Двигаем только хвост (index > 0).
-            // Если мы НЕ заняты (клиент только идет к пустой кассе), то двигаем и его.
-            
             if (_isBusy && index == 0)
             {
                 index++;
                 continue;
             }
 
-            // Формула: Встаем в Origin и отступаем назад (прочь от forward)
             Vector3 targetPos = queueOrigin.position - (queueOrigin.forward * index * queueSpacing);
             customer.MoveToPosition(targetPos);
             index++;
         }
     }
 
-    // --- ОТЛАДКА В РЕДАКТОРЕ ---
     private void OnDrawGizmos()
     {
         if (queueOrigin == null) return;
 
-        // 1. Точка обслуживания (ЗЕЛЕНАЯ) - Тот, кто платит сейчас
         Gizmos.color = Color.green;
         Gizmos.DrawWireSphere(queueOrigin.position, 0.4f);
 
-        // 2. Хвост очереди (КРАСНЫЙ) - Те, кто ждут
         for (int i = 1; i < 6; i++)
         {
             Vector3 pos = queueOrigin.position - (queueOrigin.forward * i * queueSpacing);
@@ -151,7 +129,6 @@ public class WorkerPoint : MonoBehaviour
             Gizmos.color = Color.red;
             Gizmos.DrawWireSphere(pos, 0.25f);
             
-            // Рисуем линии соединения (ЖЕЛТЫЕ)
             Gizmos.color = Color.yellow;
             if (i > 1)
             {
@@ -160,7 +137,6 @@ public class WorkerPoint : MonoBehaviour
             }
             else
             {
-                // Линия от зеленой точки к первой красной
                 Gizmos.DrawLine(queueOrigin.position, pos);
             }
         }

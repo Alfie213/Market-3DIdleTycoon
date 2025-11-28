@@ -9,7 +9,8 @@ public class Customer : MonoBehaviour
     private NavMeshAgent _agent;
     private Animator _animator;
     
-    private static readonly int IsMovingKey = Animator.StringToHash("IsMoving");
+    // Используем константу для параметра анимации
+    private static readonly int IsMovingKey = Animator.StringToHash(GameConstants.AnimParamIsMoving);
 
     private Queue<BuildingController> _shoppingList;
     private BuildingController _currentTarget;
@@ -24,34 +25,11 @@ public class Customer : MonoBehaviour
         _animator = GetComponent<Animator>();
     }
 
-    // ... (Initialize и GoToNextTarget без изменений) ...
     public void Initialize(BuildingController[] route, Vector3 exitPos)
     {
         _shoppingList = new Queue<BuildingController>(route);
         _exitPosition = exitPos;
         GoToNextTarget();
-    }
-
-    private void GoToNextTarget()
-    {
-        _isWaitingInQueue = false;
-
-        if (_shoppingList.Count > 0)
-        {
-            _currentTarget = _shoppingList.Dequeue();
-            if (_currentTarget != null)
-            {
-                _agent.SetDestination(_currentTarget.InteractionPoint.position);
-                _agent.stoppingDistance = InteractionRadius; 
-            }
-        }
-        else
-        {
-            _currentTarget = null;
-            _agent.SetDestination(_exitPosition);
-            _agent.stoppingDistance = 0f; 
-            Destroy(gameObject, 5f); 
-        }
     }
 
     private void Update()
@@ -92,22 +70,39 @@ public class Customer : MonoBehaviour
         }
     }
 
+    private void GoToNextTarget()
+    {
+        _isWaitingInQueue = false;
+
+        if (_shoppingList.Count > 0)
+        {
+            _currentTarget = _shoppingList.Dequeue();
+            if (_currentTarget != null)
+            {
+                _agent.SetDestination(_currentTarget.InteractionPoint.position);
+                _agent.stoppingDistance = InteractionRadius; 
+            }
+        }
+        else
+        {
+            _currentTarget = null;
+            _agent.SetDestination(_exitPosition);
+            _agent.stoppingDistance = 0f; 
+            Destroy(gameObject, 5f); 
+        }
+    }
+
     public void MoveToPosition(Vector3 position)
     {
         _agent.stoppingDistance = 0.1f; 
         _agent.SetDestination(position);
     }
 
-    // НОВЫЙ МЕТОД: Проверяем, дошел ли агент до назначенной точки
     public bool IsAtTargetPosition()
     {
         if (_agent.pathPending) return false;
-        // Считаем, что дошли, если дистанция меньше чуть большего порога, чем stoppingDistance
         return _agent.remainingDistance <= _agent.stoppingDistance + 0.1f;
     }
 
-    public void CompleteCurrentTask()
-    {
-        GoToNextTarget();
-    }
+    public void CompleteCurrentTask() => GoToNextTarget();
 }

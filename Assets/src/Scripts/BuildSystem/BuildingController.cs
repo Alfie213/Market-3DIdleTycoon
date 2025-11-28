@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class BuildingController : MonoBehaviour, IInteractable, ISaveable
 {
+    [Header("Save System")]
+    [SerializeField] private string buildingID;
+
+    [Header("Data")]
     [SerializeField] private BuildingData buildingData;
     
     [Header("Visuals")]
@@ -16,28 +20,22 @@ public class BuildingController : MonoBehaviour, IInteractable, ISaveable
     
     [Header("Workers")]
     [SerializeField] private List<WorkerPoint> workerPoints; 
-    
-    [Header("Save System")]
-    [Tooltip("Уникальный ID для сохранения. Должен быть разным у всех зданий! Например: MeatStall, Cashier")]
-    [SerializeField] private string buildingID; 
 
     public event Action OnStatsChanged;
 
     private bool _isBuilt = false;
     private int _currentUnlockedWorkers;
     private float _currentProcessingTime;
-    
     private int _currentSpeedLevel = 0;
-    
-    public int CurrentSpeedLevel => _currentSpeedLevel;
 
-    // Свойства...
     public BuildingData Data => buildingData;
     public bool IsBuilt => _isBuilt;
     public Transform InteractionPoint => interactionPoint;
     public int CurrentUnlockedWorkers => _currentUnlockedWorkers;
     public int MaxPossibleWorkers => buildingData.MaxPossibleWorkers;
     public float CurrentProcessingTime => _currentProcessingTime;
+    public int CurrentSpeedLevel => _currentSpeedLevel;
+    
     public int ActiveWorkersCount 
     {
         get 
@@ -52,87 +50,49 @@ public class BuildingController : MonoBehaviour, IInteractable, ISaveable
     {
         _currentUnlockedWorkers = Mathf.Min(buildingData.BaseWorkers, buildingData.MaxPossibleWorkers);
         _currentProcessingTime = buildingData.BaseProcessingTime;
-        
+    }
+
+    private void OnEnable()
+    {
         foreach (var wp in workerPoints)
         {
-            wp.OnStateChanged += () => OnStatsChanged?.Invoke();
+            wp.OnStateChanged += HandleWorkerStateChanged;
+        }
+        
+        if (priceDisplay != null) priceDisplay.OnBuyClicked += TryConstruct;
+    }
+
+    private void OnDisable()
+    {
+        foreach (var wp in workerPoints)
+        {
+            wp.OnStateChanged -= HandleWorkerStateChanged;
         }
 
-        UpdateVisuals();
+        if (priceDisplay != null) priceDisplay.OnBuyClicked -= TryConstruct;
     }
 
     private void Start()
     {
         if (string.IsNullOrEmpty(buildingID))
         {
-            Debug.LogError($"Building {gameObject.name} has no ID! Saving will fail.");
+            Debug.LogError($"Building {gameObject.name} has no ID!");
         }
 
         SaveManager.Instance.RegisterSaveable(this);
 
-        if (priceDisplay != null)
-        {
-            priceDisplay.SetPrice(buildingData.BuildCost);
-            priceDisplay.OnBuyClicked += TryConstruct;
-        }
+        if (priceDisplay != null) priceDisplay.SetPrice(buildingData.BuildCost);
         
-        // --- ДОБАВИТЬ ЭТУ СТРОКУ ---
-        // Принудительно обновляем состояние при старте.
-        // Если здание не построено (_isBuilt = false), этот метод скроет всех работников.
-        RefreshWorkerPoints(); 
-        // ---------------------------
+        RefreshWorkerPoints();
+        UpdateVisuals();
     }
 
     private void OnDestroy()
     {
-        if (priceDisplay != null) priceDisplay.OnBuyClicked -= TryConstruct;
         if (SaveManager.Instance != null) SaveManager.Instance.UnregisterSaveable(this);
     }
-    
-    public void PopulateSaveData(GameSaveData saveData)
-    {
-        // Ищем, есть ли уже запись про это здание (чтобы перезаписать)
-        BuildingSaveData data = saveData.buildings.Find(b => b.id == buildingID);
-        
-        if (data == null)
-        {
-            data = new BuildingSaveData();
-            data.id = buildingID;
-            saveData.buildings.Add(data);
-        }
 
-        data.isBuilt = _isBuilt;
-        data.speedLevel = _currentSpeedLevel;
-        data.unlockedWorkers = _currentUnlockedWorkers;
-    }
-
-    public void LoadFromSaveData(GameSaveData saveData)
-    {
-        // Ищем свои данные по ID
-        BuildingSaveData data = saveData.buildings.Find(b => b.id == buildingID);
-
-        if (data != null)
-        {
-            _isBuilt = data.isBuilt;
-            _currentSpeedLevel = data.speedLevel;
-            _currentUnlockedWorkers = data.unlockedWorkers;
-            
-            // Восстанавливаем Processing Time на основе уровня скорости
-            // Формула должна совпадать с UpgradeSpeed: Base * 0.9 ^ Level
-            _currentProcessingTime = buildingData.BaseProcessingTime * Mathf.Pow(0.9f, _currentSpeedLevel);
-            // Мин. порог
-            _currentProcessingTime = Mathf.Max(0.1f, _currentProcessingTime);
-
-            UpdateVisuals();
-            RefreshWorkerPoints();
-            
-            // Если здание построено при загрузке - нужно сообщить ShopController'у
-            if (_isBuilt)
-            {
-                GameEvents.InvokeBuildingConstructed(this);
-            }
-        }
-    }
+    private void HandleWorkerStateChanged() => OnStatsChanged?.Invoke();
 
     public void Interact()
     {
@@ -142,30 +102,17 @@ public class BuildingController : MonoBehaviour, IInteractable, ISaveable
         }
         else
         {
-            // 1. Проверка магазина (уже была)
-            if (ShopController.Instance != null && !ShopController.Instance.IsShopOpen)
-            {
-                // Можно добавить визуальный фидбек (звук ошибки или всплывающий текст)
-                return;
-            }
-
-            // 2. НОВАЯ ПРОВЕРКА ТУТОРИАЛА
-            if (TutorialController.Instance != null && !TutorialController.Instance.IsUpgradesAllowed)
-            {
-                // Игрок пытается нажать раньше времени.
-                // Можно вывести лог или подсказку "Wait for customers!"
-                Debug.Log("Wait for the tutorial instruction!");
-                return;
-            }
+            // Проверки перед открытием окна
+            if (ShopController.Instance != null && !ShopController.Instance.IsShopOpen) return;
+            if (TutorialController.Instance != null && !TutorialController.Instance.IsUpgradesAllowed) return;
             
             GameEvents.InvokeUpgradeWindowRequested(this);
         }
     }
 
-    // Этот метод теперь вызывается и при клике по 3D модели, и при клике по кнопке
     private void TryConstruct()
     {
-        if (_isBuilt) return; // Защита от двойного нажатия
+        if (_isBuilt) return;
 
         if (CurrencyController.Instance.TrySpendCurrency(buildingData.BuildCost))
         {
@@ -176,50 +123,40 @@ public class BuildingController : MonoBehaviour, IInteractable, ISaveable
         }
     }
 
-    // ... (Остальные методы: UpgradeSpeed, UpgradeWorkers, RefreshWorkerPoints и т.д. без изменений) ...
     public void UpgradeSpeed()
     {
-        // Проверка лимита
         if (_currentSpeedLevel >= buildingData.MaxSpeedUpgrades) return;
 
-        _currentSpeedLevel++; // Увеличиваем уровень
-        
+        _currentSpeedLevel++;
         _currentProcessingTime = Mathf.Max(0.1f, _currentProcessingTime * 0.9f);
+        
         RefreshWorkerPoints();
         OnStatsChanged?.Invoke();
-        
         GameEvents.InvokeUpgradePurchased();
     }
 
     public void UpgradeWorkers()
     {
         if (_currentUnlockedWorkers >= buildingData.MaxPossibleWorkers) return;
+
         _currentUnlockedWorkers++;
         RefreshWorkerPoints();
         OnStatsChanged?.Invoke();
-        
         GameEvents.InvokeUpgradePurchased();
     }
 
     private void RefreshWorkerPoints()
     {
-        // 1. Если здание еще не построено - выключаем всех
         if (!_isBuilt)
         {
             foreach (var wp in workerPoints) wp.SetUnlocked(false);
             return;
         }
 
-        // 2. Если построено - обновляем данные и включаем нужное кол-во
         for (int i = 0; i < workerPoints.Count; i++)
         {
             bool shouldBeActive = i < _currentUnlockedWorkers;
-            
-            // --- ВАЖНО: Передаем актуальную скорость и доход ---
-            // _currentProcessingTime меняется при апгрейдах, поэтому важно обновлять его здесь
             workerPoints[i].Initialize(_currentProcessingTime, buildingData.ProfitPerCustomer);
-            // --------------------------------------------------
-
             workerPoints[i].SetUnlocked(shouldBeActive);
         }
     }
@@ -235,8 +172,7 @@ public class BuildingController : MonoBehaviour, IInteractable, ISaveable
             else priceDisplay.Show();
         }
     }
-    
-    // ... CanAcceptCustomer, EnqueueCustomer, GetBestWorkerPoint без изменений ...
+
     public bool CanAcceptCustomer()
     {
         if (!_isBuilt) return false;
@@ -269,5 +205,39 @@ public class BuildingController : MonoBehaviour, IInteractable, ISaveable
             }
         }
         return bestPoint;
+    }
+
+    // ISaveable
+    public void PopulateSaveData(GameSaveData saveData)
+    {
+        BuildingSaveData data = saveData.buildings.Find(b => b.id == buildingID);
+        if (data == null)
+        {
+            data = new BuildingSaveData { id = buildingID };
+            saveData.buildings.Add(data);
+        }
+
+        data.isBuilt = _isBuilt;
+        data.speedLevel = _currentSpeedLevel;
+        data.unlockedWorkers = _currentUnlockedWorkers;
+    }
+
+    public void LoadFromSaveData(GameSaveData saveData)
+    {
+        BuildingSaveData data = saveData.buildings.Find(b => b.id == buildingID);
+        if (data != null)
+        {
+            _isBuilt = data.isBuilt;
+            _currentSpeedLevel = data.speedLevel;
+            _currentUnlockedWorkers = data.unlockedWorkers;
+            
+            _currentProcessingTime = buildingData.BaseProcessingTime * Mathf.Pow(0.9f, _currentSpeedLevel);
+            _currentProcessingTime = Mathf.Max(0.1f, _currentProcessingTime);
+
+            UpdateVisuals();
+            RefreshWorkerPoints();
+            
+            if (_isBuilt) GameEvents.InvokeBuildingConstructed(this);
+        }
     }
 }

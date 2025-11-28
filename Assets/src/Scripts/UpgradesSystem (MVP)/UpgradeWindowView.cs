@@ -3,11 +3,11 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UpgradeWindowView : MonoBehaviour
+public class UpgradeWindowView : MonoBehaviour, IView
 {
     [Header("Main Info")]
-    [SerializeField] private GameObject windowRoot; // Само окно
-    [SerializeField] private GameObject blackoutObject; // Черный фон
+    [SerializeField] private GameObject windowRoot;
+    [SerializeField] private GameObject blackoutObject;
     
     [SerializeField] private TextMeshProUGUI buildingNameText;
     [SerializeField] private TextMeshProUGUI profitText;
@@ -32,16 +32,16 @@ public class UpgradeWindowView : MonoBehaviour
         workersUpgradeButton.onClick.AddListener(() => OnWorkersUpgradeClicked?.Invoke());
     }
 
-    public void SetWindowActive(bool isActive)
+    public void Show()
     {
-        // Включаем/выключаем окно
-        windowRoot.SetActive(isActive);
-        
-        // Включаем/выключаем затемнение синхронно с окном
-        if (blackoutObject != null)
-        {
-            blackoutObject.SetActive(isActive);
-        }
+        windowRoot.SetActive(true);
+        if (blackoutObject != null) blackoutObject.SetActive(true);
+    }
+
+    public void Hide()
+    {
+        windowRoot.SetActive(false);
+        if (blackoutObject != null) blackoutObject.SetActive(false);
     }
 
     public void UpdateInfo(string name, int profit)
@@ -58,7 +58,7 @@ public class UpgradeWindowView : MonoBehaviour
 
     public void UpdateCosts(int speedCost, int workerCost, bool maxSpeedReached, bool maxWorkersReached, bool canAffordSpeed, bool canAffordWorkers)
     {
-        // 1. СКОРОСТЬ
+        // Speed
         if (maxSpeedReached)
         {
             speedCostText.text = "MAX";
@@ -67,12 +67,10 @@ public class UpgradeWindowView : MonoBehaviour
         else
         {
             speedCostText.text = $"{speedCost}$";
-            // Включаем кнопку только если хватает денег. 
-            // Можно еще покрасить текст в красный, если !canAffordSpeed, но пока просто Interactable
             speedUpgradeButton.interactable = canAffordSpeed;
         }
 
-        // 2. РАБОТНИКИ
+        // Workers
         if (maxWorkersReached)
         {
             workersCostText.text = "MAX";
