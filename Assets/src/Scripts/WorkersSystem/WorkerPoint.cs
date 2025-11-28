@@ -117,7 +117,7 @@ public class WorkerPoint : MonoBehaviour
                 continue;
             }
 
-            Vector3 targetPos = queueOrigin.position - (queueOrigin.forward * index * queueSpacing);
+            Vector3 targetPos = queueOrigin.position - (queueOrigin.forward * (index * queueSpacing));
             customer.MoveToPosition(targetPos);
             index++;
         }
